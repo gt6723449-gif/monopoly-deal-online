@@ -1,0 +1,913 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --green: #0b5f34;
+    --dark-green: #06351f;
+    --red: #d71920;
+    --cream: #f8f1dc;
+    --paper: #fffaf0;
+    --ink: #111827;
+    --gold: #facc15;
+
+    --card-width: 132px;
+    --card-height: 210px;
+    --card-overlap: 34px;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    overflow-x: hidden;
+    font-family: system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    color: var(--ink);
+}
+
+button,
+input,
+select {
+    max-width: 100%;
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-weight: 900;
+    background: var(--red);
+    color: white;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+input,
+select {
+    width: 100%;
+    min-width: 0;
+    padding: 8px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: white;
+    color: var(--ink);
+    font-weight: 700;
+}
+
+/* START */
+
+.start-page {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
+
+.start-card {
+    width: min(92vw, 620px);
+    display: grid;
+    gap: 18px;
+    padding: clamp(18px, 3vw, 34px);
+    background: var(--cream);
+    border: 5px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+    text-align: center;
+    overflow: hidden;
+}
+
+.game-logo {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+}
+
+.game-logo span {
+    padding: 10px 18px;
+    background: var(--red);
+    color: white;
+    border: 5px solid white;
+    outline: 4px solid var(--ink);
+    border-radius: 12px;
+    font-size: clamp(2rem, 7vw, 4.8rem);
+    font-weight: 1000;
+    line-height: 1;
+}
+
+.game-logo strong {
+    padding: 8px 24px;
+    background: var(--ink);
+    color: var(--gold);
+    border: 4px solid var(--gold);
+    border-radius: 999px;
+    font-size: clamp(2.4rem, 8vw, 5.2rem);
+    font-weight: 1000;
+    letter-spacing: 0.08em;
+    line-height: 1;
+}
+
+.start-subtitle {
+    margin: 0;
+    font-size: clamp(0.8rem, 1.8vw, 1.05rem);
+    font-weight: 1000;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.start-card form,
+.setup-names {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.start-card label {
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    font-weight: 900;
+}
+
+/* APP */
+
+.app {
+    min-height: 100svh;
+    width: 100%;
+    display: grid;
+    place-items: start center;
+    padding: 8px;
+    overflow-x: hidden;
+}
+
+.game-shell {
+    width: min(100%, 860px);
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+/* TABLE */
+
+.game-table {
+    width: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(130px, auto) auto;
+    gap: 7px;
+    padding: 8px;
+    background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 32%),
+        #0b5f34;
+    border: 5px solid #06351f;
+    border-radius: 28px;
+    box-shadow:
+        inset 0 0 36px rgba(0, 0, 0, 0.38),
+        0 10px 0 rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+}
+
+.opponents-row,
+.current-player-row {
+    min-width: 0;
+    display: grid;
+    gap: 7px;
+}
+
+.player-area {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+    padding: 5px;
+    background: rgba(248, 241, 220, 0.94);
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.player-area-header {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.player-area-header h2 {
+    min-width: 0;
+    margin: 0;
+    padding: 4px 7px;
+    background: var(--red);
+    color: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-size: clamp(0.72rem, 1.8vw, 0.95rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.player-area-header span {
+    flex-shrink: 0;
+    font-size: clamp(0.62rem, 1.5vw, 0.76rem);
+    font-weight: 1000;
+}
+
+/* CENTER */
+
+.table-center {
+    min-height: clamp(100px, 20vw, 170px);
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 35%),
+        rgba(6, 53, 31, 0.68);
+    border: 3px dashed rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+}
+
+.empty-table-label {
+    width: clamp(80px, 16vw, 140px);
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    border: 3px solid rgba(255, 255, 255, 0.22);
+    border-radius: 18px;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 1000;
+    letter-spacing: 0.12em;
+}
+
+.table-played-card {
+    width: var(--card-width);
+    height: var(--card-height);
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.table-played-card .deal-card {
+    width: var(--card-width);
+    min-width: var(--card-width);
+    max-width: var(--card-width);
+    height: var(--card-height);
+    min-height: var(--card-height);
+    max-height: var(--card-height);
+    transform: none;
+    box-shadow: none;
+}
+
+/* ZONES */
+
+.hand-zone,
+.table-zone {
+    min-width: 0;
+    padding: 4px;
+    background: #d7f3df;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.hand-zone h3,
+.table-zone h3 {
+    margin: 0 0 4px;
+    font-size: clamp(0.64rem, 1.4vw, 0.78rem);
+}
+
+/* PROPERTIES */
+
+.property-groups {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.property-group {
+    position: relative;
+    min-width: 0;
+    height: 54px;
+    display: grid;
+    grid-template-rows: 13px 1fr;
+    background: #f8fafc;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.property-group-color {
+    width: 100%;
+    height: 100%;
+    border-bottom: 2px solid var(--ink);
+}
+
+.property-card-slots {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 2px;
+    padding: 3px;
+}
+
+.property-slot-filled {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+}
+
+.property-slot-filled select {
+    height: 100%;
+    padding: 1px;
+    font-size: 0.42rem;
+    border: 0;
+    border-radius: 3px;
+}
+
+.property-slot-wild {
+    position: relative;
+    outline: 2px dashed white;
+    outline-offset: -4px;
+}
+
+.property-slot-wild::after {
+    content: "↺";
+    position: absolute;
+    right: 2px;
+    top: 1px;
+    width: 12px;
+    height: 12px;
+    display: grid;
+    place-items: center;
+    background: white;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    font-size: 0.55rem;
+    font-weight: 1000;
+}
+
+.complete-set {
+    outline: 2px solid #22c55e;
+}
+
+.set-modifier-dot {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 14px;
+    height: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--gold);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    font-size: 0.55rem;
+    font-weight: 1000;
+}
+
+/* HAND */
+
+.table-hand-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    padding: 3px 0 8px;
+}
+
+.table-hand-row>.deal-card,
+.small-card-back {
+    flex: 0 0 var(--card-width);
+    width: var(--card-width);
+    min-width: var(--card-width);
+    max-width: var(--card-width);
+    height: var(--card-height);
+    min-height: var(--card-height);
+    max-height: var(--card-height);
+    margin-left: calc(var(--card-overlap) * -1);
+}
+
+.table-hand-row>.deal-card:first-child,
+.small-card-back:first-child {
+    margin-left: 0;
+}
+
+.card-back,
+.small-card-back {
+    display: grid;
+    place-items: center;
+    background:
+        repeating-linear-gradient(45deg,
+            #d71920,
+            #d71920 9px,
+            #b51218 9px,
+            #b51218 18px);
+    color: white;
+    border: 3px solid white;
+    border-radius: 12px;
+    font-size: clamp(0.5rem, 1.2vw, 0.7rem);
+    font-weight: 1000;
+    letter-spacing: 0.08em;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
+}
+
+/* CARD */
+
+.deal-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: 3px;
+    padding: 6px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
+    overflow: hidden;
+}
+
+.deal-card-value {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    z-index: 2;
+}
+
+.deal-card-value span {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    font-size: 0.55rem;
+    font-weight: 1000;
+}
+
+.deal-property-bar,
+.deal-non-property-top-space {
+    height: 36px;
+    margin: -6px -6px 1px;
+    border-bottom: 3px solid var(--ink);
+}
+
+.deal-property-bar.split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(1px, 1fr));
+}
+
+.deal-card-header {
+    min-height: 34px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.deal-card-header p {
+    margin: 0;
+    font-size: 0.48rem;
+    font-weight: 1000;
+    text-transform: uppercase;
+}
+
+.deal-card-header h3 {
+    margin: 1px 0 0;
+    font-size: 0.66rem;
+    line-height: 1.05;
+}
+
+.deal-money-center {
+    display: grid;
+    place-items: center;
+}
+
+.deal-money-center span {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    background: #fef3c7;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    font-size: 1.15rem;
+    font-weight: 1000;
+}
+
+.deal-rent-table {
+    display: grid;
+    gap: 1px;
+    padding: 3px;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    font-size: 0.60rem;
+    overflow: hidden;
+}
+
+.deal-rent-table strong {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.deal-rent-table div {
+    display: flex;
+    justify-content: space-between;
+    gap: 3px;
+}
+
+.deal-action-icon {
+    min-height: 34px;
+    display: grid;
+    place-items: center;
+    margin: 1px 8px;
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    text-align: center;
+    overflow: hidden;
+}
+
+.deal-action-icon span {
+    font-size: 0.56rem;
+    font-weight: 1000;
+}
+
+.rent-icon span {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+}
+
+.deal-card-text {
+    min-height: 0;
+    margin: 0;
+    padding: 3px;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 7px;
+    font-size: 0.60rem;
+    line-height: 1.08;
+    overflow: hidden;
+}
+
+.deal-card-money {
+    background: #dcfce7;
+}
+
+.deal-card-action {
+    background: #fee2e2;
+}
+
+.deal-card-rent {
+    background: #ffedd5;
+}
+
+.deal-card-wild {
+    background: #f3e8ff;
+}
+
+.card-actions {
+    display: grid;
+    gap: 3px;
+    align-self: end;
+}
+
+.card-actions button,
+.card-actions select {
+    padding: 3px;
+    font-size: 0.48rem;
+}
+
+/* PANELS */
+
+.payment-panel,
+.response-panel,
+.discard-panel,
+.winner-banner,
+.notice {
+    width: 100%;
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 14px;
+}
+
+.payment-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+}
+
+.payment-card {
+    display: grid;
+    gap: 4px;
+    min-height: 80px;
+    text-align: left;
+    background: white;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+}
+
+.selected-payment-card {
+    outline: 3px solid #22c55e;
+}
+
+.payment-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--ink);
+    font-size: 0.58rem;
+    font-weight: 800;
+}
+
+.checkbox-row input {
+    width: auto;
+}
+
+/* DESKTOP */
+
+@media (min-width: 900px) {
+    .game-shell {
+        width: 860px;
+    }
+}
+
+/* PHONE: card system only */
+
+@media (max-width: 768px) {
+
+    .table-played-card {
+        width: 76px;
+        height: 152px;
+    }
+
+    .table-played-card .deal-card {
+        width: 76px;
+        min-width: 76px;
+        max-width: 76px;
+        height: 152px;
+        min-height: 152px;
+        max-height: 152px;
+    }
+
+    .table-hand-row>.deal-card,
+    .small-card-back {
+        flex: 0 0 76px;
+        width: 76px;
+        min-width: 76px;
+        max-width: 76px;
+        height: 152px;
+        min-height: 152px;
+        max-height: 152px;
+        margin-left: -18px;
+    }
+
+    .table-hand-row>.deal-card:first-child,
+    .small-card-back:first-child {
+        margin-left: 0;
+    }
+
+    .deal-card {
+        padding: 3px;
+        border-width: 2px;
+        border-radius: 8px;
+        gap: 1px;
+    }
+
+    .deal-property-bar,
+    .deal-non-property-top-space {
+        height: 28px;
+        margin: -3px -3px 1px;
+        border-bottom-width: 2px;
+    }
+
+    .deal-card-value span {
+        width: 22px;
+        height: 22px;
+        font-size: 0.45rem;
+        border-width: 1px;
+    }
+
+    .deal-card-header {
+        min-height: 18px;
+    }
+
+    .deal-card-header p {
+        font-size: 0.45rem;
+    }
+
+    .deal-card-header h3 {
+        font-size: 0.50rem;
+    }
+
+    .deal-rent-table {
+        font-size: 0.50rem;
+        padding: 1px;
+        border-width: 1px;
+    }
+
+    .deal-money-center span {
+        width: 32px;
+        height: 32px;
+        font-size: 0.55rem;
+        border-width: 1px;
+    }
+
+    .deal-card-text {
+        font-size: 0.50rem;
+        padding: 1px;
+        border-width: 1px;
+    }
+
+    .card-actions button,
+    .card-actions select {
+        padding: 1px;
+        font-size: 0.45rem;
+    }
+}
+
+/* CARD FOCUS / PRESS TEST — LAPTOP + PHONE */
+
+.game-shell,
+.game-table,
+.player-area,
+.current-player-row,
+.hand-zone,
+.table-hand-row {
+    overflow: visible;
+}
+
+.table-hand-row>.deal-card {
+    position: relative;
+    z-index: 1;
+    transition:
+        transform 160ms ease,
+        z-index 160ms ease,
+        box-shadow 160ms ease;
+}
+
+/* Laptop hover/focus */
+.table-hand-row>.deal-card:hover,
+.table-hand-row>.deal-card:focus-within {
+    z-index: 100;
+    transform: translateY(-36px) scale(1.08);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Phone press */
+@media (max-width: 768px) {
+    .table-hand-row {
+        padding-top: 44px;
+        padding-bottom: 18px;
+    }
+
+    .table-hand-row>.deal-card:active,
+    .table-hand-row>.deal-card:focus-within {
+        z-index: 100;
+        transform: translateY(-42px) scale(1.22);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .table-hand-row>.deal-card:first-child:active,
+    .table-hand-row>.deal-card:first-child:focus-within {
+        transform: translate(34px, -42px) scale(1.22);
+    }
+
+    .table-hand-row>.deal-card:last-child:active,
+    .table-hand-row>.deal-card:last-child:focus-within {
+        transform: translate(-34px, -42px) scale(1.22);
+    }
+}
+
+.player-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.small-end-turn-button {
+    padding: 4px 7px;
+    font-size: 0.68rem;
+    border-radius: 7px;
+}
+
+.player-name-timer {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+}
+
+.player-name-timer h2 {
+    position: relative;
+    z-index: 2;
+}
+
+.turn-timer-ring {
+    position: absolute;
+    inset: -5px;
+    z-index: 1;
+    border-radius: 12px;
+    background: conic-gradient(#facc15 var(--timer-progress),
+            rgba(17, 24, 39, 0.18) 0deg);
+}
+
+.turn-timer-ring::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 9px;
+    background: #d71920;
+}
+
+.winner-claim-page {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+}
+
+.winner-claim-card {
+    width: min(92vw, 520px);
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+    background: var(--cream);
+    border: 5px solid var(--ink);
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+}
+
+.winner-claim-card h1,
+.winner-claim-card p {
+    margin: 0;
+}
+
+.claim-amount {
+    font-size: 3rem;
+    font-weight: 1000;
+    color: var(--green);
+}
+
+.winner-claim-card form {
+    display: grid;
+    gap: 12px;
+}
+
+.winner-claim-card label {
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    font-weight: 900;
+}
+
+.phone-row {
+    display: grid;
+    grid-template-columns: 74px 1fr;
+    gap: 8px;
+}
+
+.phone-row span {
+    display: grid;
+    place-items: center;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-weight: 900;
+}
+
+.claim-error {
+    color: #dc2626;
+    font-weight: 900;
+}
+
+.claim-success {
+    color: #16a34a;
+    font-weight: 900;
+}
