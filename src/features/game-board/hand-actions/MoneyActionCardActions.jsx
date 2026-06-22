@@ -1,3 +1,5 @@
+import { t } from "../../../i18n/translations";
+
 export function MoneyActionCardActions({
   card,
   canAct,
@@ -6,6 +8,7 @@ export function MoneyActionCardActions({
   selectedTargetId,
   onTargetChange,
   onPlayMoneyAction,
+  language,
 }) {
   return (
     <>
@@ -19,7 +22,7 @@ export function MoneyActionCardActions({
         >
           {targetablePlayers.map((targetPlayer) => (
             <option value={targetPlayer.id} key={targetPlayer.id}>
-              Target: {targetPlayer.name}
+              {t(language, "target")}: {targetPlayer.name}
             </option>
           ))}
         </select>
@@ -30,7 +33,7 @@ export function MoneyActionCardActions({
         onClick={() => onPlayMoneyAction(card)}
         disabled={!canAct}
       >
-        Play Action
+        {t(language, "playAction")}
       </button>
     </>
   );

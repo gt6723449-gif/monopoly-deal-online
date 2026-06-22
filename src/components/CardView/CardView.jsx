@@ -1,4 +1,5 @@
 import { PROPERTY_SETS } from "../../game/data/propertySets";
+import { t } from "../../i18n/translations";
 
 const PROPERTY_COLORS = {
   brown: "#8b4513",
@@ -21,14 +22,45 @@ function getPrimaryColor(card) {
   return card.meta?.activeColor || card.meta?.colors?.[0] || "utility";
 }
 
-function getRentRows(card) {
+function getCardName(card, language) {
+  return t(language, `cardName.${card.id}`);
+}
+
+function getCardDescription(card, language) {
+  return t(language, `cardDescription.${card.id}`);
+}
+
+function getCardTypeLabel(card, language) {
+  if (card.type === "property" || card.type === "wild") {
+    return t(language, "propertyCard");
+  }
+
+  if (card.type === "money") {
+    return t(language, "moneyCard");
+  }
+
+  if (card.type === "rent") {
+    return t(language, "rentCard");
+  }
+
+  if (card.type === "action") {
+    return t(language, "actionCard");
+  }
+
+  return card.type;
+}
+
+function getRentRows(card, language) {
   const color = getPrimaryColor(card);
   const set = PROPERTY_SETS[color];
 
   if (!set) return [];
 
   return set.rents.map((rent, index) => ({
-    label: `${index + 1} card${index + 1 > 1 ? "s" : ""}`,
+    label:
+      index + 1 === 1
+        ? `1 ${t(language, "cardSingular")}`
+        : `${index + 1} ${t(language, "cardPlural")}`,
     rent,
   }));
 }
@@ -57,13 +89,13 @@ function PropertyColorBar({ card }) {
   );
 }
 
-function RentColorCircle({ card }) {
+function RentColorCircle({ card, language }) {
   const colors = card.meta?.colors || [];
 
   if (colors.length === 0) {
     return (
       <div className="deal-action-icon rent-icon">
-        <span>RENT</span>
+        <span>{t(language, "rent")}</span>
       </div>
     );
   }
@@ -74,7 +106,7 @@ function RentColorCircle({ card }) {
         className="deal-action-icon rent-icon single-rent-color"
         style={{ background: PROPERTY_COLORS[colors[0]] }}
       >
-        <span>RENT</span>
+        <span>{t(language, "rent")}</span>
       </div>
     );
   }
@@ -92,16 +124,19 @@ function RentColorCircle({ card }) {
       className="deal-action-icon rent-icon"
       style={{ background: `conic-gradient(${gradientStops})` }}
     >
-      <span>RENT</span>
+      <span>{t(language, "rent")}</span>
     </div>
   );
 }
 
-export function CardView({ card, children, compact = false }) {
+export function CardView({ card, children, compact = false, language = "en" }) {
+  const translatedName = getCardName(card, language);
+  const translatedDescription = getCardDescription(card, language);
+
   if (compact) {
     return (
       <div className={`mini-card mini-card-${card.type}`}>
-        <strong>{card.name}</strong>
+        <strong>{translatedName}</strong>
         <span>{getCardValue(card)}</span>
         {children}
       </div>
@@ -115,17 +150,19 @@ export function CardView({ card, children, compact = false }) {
 
   return (
     <article className={`deal-card deal-card-${card.type}`}>
-      <div className="deal-card-value">
-        <span>{getCardValue(card)}</span>
-      </div>
+      {!isMoney && (
+        <div className="deal-card-value">
+          <span>{getCardValue(card)}</span>
+        </div>
+      )}
 
       {isProperty && <PropertyColorBar card={card} />}
 
       {!isProperty && <div className="deal-non-property-top-space" />}
 
       <header className="deal-card-header">
-        <p>{isProperty ? "Property Card" : `${card.type} Card`}</p>
-        <h3>{card.name}</h3>
+        {!isMoney && <p>{getCardTypeLabel(card, language)}</p>}
+        <h3>{translatedName}</h3>
       </header>
 
       {isMoney && (
@@ -136,8 +173,8 @@ export function CardView({ card, children, compact = false }) {
 
       {isProperty && (
         <div className="deal-rent-table">
-          <strong>Rent</strong>
-          {getRentRows(card).map((row) => (
+          <strong>{t(language, "rent")}</strong>
+          {getRentRows(card, language).map((row) => (
             <div key={row.label}>
               <span>{row.label}</span>
               <span>${row.rent}M</span>
@@ -146,12 +183,16 @@ export function CardView({ card, children, compact = false }) {
         </div>
       )}
 
-      {isRent && <RentColorCircle card={card} />}
+      {isRent && <RentColorCircle card={card} language={language} />}
 
-      {isAction && <div className="deal-action-spacer" />}
+      {isAction && (
+        <div className="deal-action-name-circle">
+          <strong>{translatedName}</strong>
+        </div>
+      )}
 
-      {card.description && !isProperty && !isMoney && (
-        <p className="deal-card-text">{card.description}</p>
+      {translatedDescription && !isProperty && !isMoney && (
+        <p className="deal-card-text">{translatedDescription}</p>
       )}
 
       {children && <div className="card-actions">{children}</div>}

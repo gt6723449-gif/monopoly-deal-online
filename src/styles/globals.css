@@ -11,8 +11,8 @@
     --ink: #111827;
     --gold: #facc15;
 
-    --card-width: 132px;
-    --card-height: 210px;
+    --card-width: 144px;
+    --card-height: 230px;
     --card-overlap: 34px;
 }
 
@@ -135,6 +135,60 @@ select {
     font-weight: 900;
 }
 
+.setup-choice-group {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.setup-choice-group legend {
+    padding: 0;
+    text-align: left;
+    font-weight: 900;
+}
+
+.setup-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.setup-choice-card {
+    min-height: 58px;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    padding: 10px;
+    background: white;
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
+}
+
+.setup-choice-card strong {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.setup-choice-card span {
+    font-size: 0.78rem;
+}
+
+.selected-setup-choice {
+    background: var(--red);
+    color: white;
+    outline: 0;
+}
+
+.setup-choice-card:disabled {
+    background: #e5e7eb;
+    color: #6b7280;
+    opacity: 0.75;
+}
+
 /* APP */
 
 .app {
@@ -157,7 +211,6 @@ select {
 .game-table {
     width: 100%;
     display: grid;
-    grid-template-rows: auto minmax(130px, auto) auto;
     gap: 7px;
     padding: 8px;
     background:
@@ -171,11 +224,43 @@ select {
     overflow: hidden;
 }
 
-.opponents-row,
-.current-player-row {
+.game-table-2 {
+    grid-template-areas:
+        "top"
+        "center"
+        "bottom";
+    grid-template-rows: auto minmax(130px, auto) auto;
+}
+
+.game-table-4 {
+    grid-template-areas:
+        "top top top"
+        "left center right"
+        "bottom bottom bottom";
+    grid-template-columns: minmax(148px, 0.7fr) minmax(210px, 1.35fr) minmax(148px, 0.7fr);
+    grid-template-rows: auto minmax(170px, auto) auto;
+    align-items: stretch;
+}
+
+.table-seat {
     min-width: 0;
     display: grid;
-    gap: 7px;
+}
+
+.table-seat-top {
+    grid-area: top;
+}
+
+.table-seat-right {
+    grid-area: right;
+}
+
+.table-seat-bottom {
+    grid-area: bottom;
+}
+
+.table-seat-left {
+    grid-area: left;
 }
 
 .player-area {
@@ -220,6 +305,7 @@ select {
 /* CENTER */
 
 .table-center {
+    grid-area: center;
     min-height: clamp(100px, 20vw, 170px);
     display: grid;
     place-items: center;
@@ -228,6 +314,61 @@ select {
         rgba(6, 53, 31, 0.68);
     border: 3px dashed rgba(255, 255, 255, 0.5);
     border-radius: 24px;
+}
+
+.game-table-4 .table-center {
+    min-height: 100%;
+}
+
+.table-seat-left .player-area,
+.table-seat-right .player-area {
+    align-content: start;
+}
+
+.table-seat-left .player-area-header,
+.table-seat-right .player-area-header {
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.table-seat-left .player-header-actions,
+.table-seat-right .player-header-actions {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.table-seat-left .property-groups,
+.table-seat-right .property-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.table-seat-left .property-group,
+.table-seat-right .property-group {
+    height: 42px;
+}
+
+.table-seat-left .hidden-hand-row,
+.table-seat-right .hidden-hand-row {
+    --default-card-overlap: 34px;
+    --min-visible-card-width: 16px;
+    justify-content: flex-start;
+}
+
+.table-seat-left .hidden-hand-row>.small-card-back,
+.table-seat-right .hidden-hand-row>.small-card-back {
+    flex-basis: 52px;
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    height: 76px;
+    min-height: 76px;
+    max-height: 76px;
+    font-size: 0.46rem;
+}
+
+.table-seat-left .hidden-hand-row>.small-card-back:first-child,
+.table-seat-right .hidden-hand-row>.small-card-back:first-child {
+    margin-left: 0;
 }
 
 .empty-table-label {
@@ -374,6 +515,9 @@ select {
 /* HAND */
 
 .table-hand-row {
+    --default-card-overlap: var(--card-overlap);
+    --hand-card-overlap: var(--default-card-overlap);
+    --min-visible-card-width: 28px;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -394,7 +538,7 @@ select {
     height: var(--card-height);
     min-height: var(--card-height);
     max-height: var(--card-height);
-    margin-left: calc(var(--card-overlap) * -1);
+    margin-left: calc(var(--hand-card-overlap) * -1);
 }
 
 .table-hand-row>.deal-card:first-child,
@@ -426,7 +570,7 @@ select {
 .deal-card {
     position: relative;
     display: grid;
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
     gap: 3px;
     padding: 6px;
     background: var(--paper);
@@ -469,9 +613,10 @@ select {
 }
 
 .deal-card-header {
-    min-height: 34px;
+    min-width: 0;
+    min-height: 0;
     text-align: center;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .deal-card-header p {
@@ -483,8 +628,10 @@ select {
 
 .deal-card-header h3 {
     margin: 1px 0 0;
-    font-size: 0.66rem;
-    line-height: 1.05;
+    font-size: 0.72rem;
+    line-height: 1.03;
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 .deal-money-center {
@@ -512,6 +659,7 @@ select {
     border: 2px solid var(--ink);
     border-radius: 7px;
     font-size: 0.60rem;
+    line-height: 1.04;
     overflow: hidden;
 }
 
@@ -560,9 +708,11 @@ select {
     background: white;
     border: 2px solid var(--ink);
     border-radius: 7px;
-    font-size: 0.60rem;
-    line-height: 1.08;
-    overflow: hidden;
+    font-size: 0.58rem;
+    line-height: 1.03;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 .deal-card-money {
@@ -570,7 +720,80 @@ select {
 }
 
 .deal-card-action {
+    grid-template-rows: 10% 35% 20% 29%;
+    gap: 2% 0;
+    padding: 8px;
     background: #fee2e2;
+}
+
+.deal-card-action>* {
+    min-height: 0;
+}
+
+.deal-card-action .deal-card-value {
+    top: 8px;
+    left: 8px;
+}
+
+.deal-card-action .deal-non-property-top-space {
+    display: none;
+}
+
+.deal-card-action .deal-card-header {
+    grid-row: 1;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    padding-left: 28px;
+}
+
+.deal-card-action .deal-card-header p {
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.deal-card-action .deal-card-header h3 {
+    display: none;
+}
+
+.deal-action-name-circle {
+    grid-row: 2;
+    width: auto;
+    max-width: 68%;
+    height: min(100%, 72px);
+    aspect-ratio: 1 / 1;
+    align-self: center;
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    text-align: center;
+}
+
+.deal-action-name-circle strong {
+    font-size: 0.64rem;
+    line-height: 1.05;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.deal-card-action .deal-card-text {
+    grid-row: 3;
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 5px;
+    font-size: 0.52rem;
+    line-height: 1.05;
+    text-align: center;
+}
+
+.deal-card-action .card-actions {
+    grid-row: 4;
 }
 
 .deal-card-rent {
@@ -610,30 +833,122 @@ select {
     border-radius: 14px;
 }
 
+.payment-modal-backdrop,
+.discard-modal-backdrop,
+.action-choice-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.52);
+}
+
+.payment-modal,
+.discard-modal,
+.action-choice-modal {
+    width: min(94vw, 440px);
+    max-height: min(82svh, 560px);
+    gap: 6px;
+    padding: 10px;
+    margin: 0;
+    overflow: auto;
+    box-shadow: 0 14px 0 rgba(0, 0, 0, 0.35);
+}
+
+.discard-modal {
+    width: min(94vw, 520px);
+}
+
+.payment-modal h2,
+.payment-modal p,
+.discard-modal h2,
+.discard-modal p,
+.action-choice-modal h2 {
+    margin: 0;
+}
+
+.payment-modal h2,
+.discard-modal h2,
+.action-choice-modal h2 {
+    font-size: 1rem;
+}
+
+.action-choice-list,
+.action-choice-form {
+    display: grid;
+    gap: 6px;
+}
+
+.action-choice-list button {
+    padding: 8px;
+    text-align: start;
+}
+
+.action-choice-form label {
+    display: grid;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.action-choice-cancel {
+    background: var(--ink);
+}
+
+.payment-summary {
+    font-size: 0.82rem;
+    line-height: 1.25;
+}
+
+.payment-totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
 .payment-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+    gap: 5px;
 }
 
 .payment-card {
     display: grid;
-    gap: 4px;
-    min-height: 80px;
+    gap: 2px;
+    min-height: 54px;
+    padding: 5px;
     text-align: left;
     background: white;
     color: var(--ink);
     border: 2px solid var(--ink);
+    font-size: 0.68rem;
+    line-height: 1.05;
+}
+
+.payment-card span,
+.payment-card small {
+    font-size: 0.68rem;
 }
 
 .selected-payment-card {
-    outline: 3px solid #22c55e;
+    outline: 2px solid #22c55e;
 }
 
 .payment-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+}
+
+.payment-actions button {
+    flex: 1;
+    padding: 6px;
+    font-size: 0.78rem;
 }
 
 .checkbox-row {
@@ -662,29 +977,29 @@ select {
 @media (max-width: 768px) {
 
     .table-played-card {
-        width: 76px;
-        height: 152px;
+        width: 86px;
+        height: 172px;
     }
 
     .table-played-card .deal-card {
-        width: 76px;
-        min-width: 76px;
-        max-width: 76px;
-        height: 152px;
-        min-height: 152px;
-        max-height: 152px;
+        width: 86px;
+        min-width: 86px;
+        max-width: 86px;
+        height: 172px;
+        min-height: 172px;
+        max-height: 172px;
     }
 
     .table-hand-row>.deal-card,
     .small-card-back {
-        flex: 0 0 76px;
-        width: 76px;
-        min-width: 76px;
-        max-width: 76px;
-        height: 152px;
-        min-height: 152px;
-        max-height: 152px;
-        margin-left: -18px;
+        flex: 0 0 92px;
+        width: 92px;
+        min-width: 92px;
+        max-width: 92px;
+        height: 184px;
+        min-height: 184px;
+        max-height: 184px;
+        margin-left: calc(var(--hand-card-overlap) * -1);
     }
 
     .table-hand-row>.deal-card:first-child,
@@ -714,19 +1029,22 @@ select {
     }
 
     .deal-card-header {
-        min-height: 18px;
+        min-height: 0;
     }
 
     .deal-card-header p {
-        font-size: 0.45rem;
+        font-size: 0.43rem;
+        line-height: 1;
     }
 
     .deal-card-header h3 {
-        font-size: 0.50rem;
+        font-size: 0.54rem;
+        line-height: 1;
     }
 
     .deal-rent-table {
-        font-size: 0.50rem;
+        font-size: 0.48rem;
+        line-height: 1;
         padding: 1px;
         border-width: 1px;
     }
@@ -739,9 +1057,46 @@ select {
     }
 
     .deal-card-text {
-        font-size: 0.50rem;
+        font-size: 0.47rem;
+        line-height: 1;
         padding: 1px;
         border-width: 1px;
+    }
+
+    .deal-card-action {
+        padding: 4px;
+    }
+
+    .deal-card-action .deal-card-value {
+        top: 4px;
+        left: 4px;
+    }
+
+    .deal-card-action .deal-card-header {
+        padding-left: 22px;
+    }
+
+    .deal-card-action .deal-card-header p {
+        font-size: 0.50rem;
+    }
+
+    .deal-action-name-circle {
+        width: auto;
+        max-width: 66%;
+        height: min(100%, 48px);
+        padding: 5px;
+        border-width: 2px;
+    }
+
+    .deal-action-name-circle strong {
+        font-size: 0.42rem;
+        line-height: 1;
+    }
+
+    .deal-card-action .deal-card-text {
+        padding: 2px;
+        font-size: 0.36rem;
+        line-height: 1.04;
     }
 
     .card-actions button,
@@ -752,6 +1107,42 @@ select {
 }
 
 /* CARD FOCUS / PRESS TEST — LAPTOP + PHONE */
+
+@media (max-width: 380px) {
+
+    .table-played-card {
+        width: 80px;
+        height: 160px;
+    }
+
+    .table-played-card .deal-card {
+        width: 80px;
+        min-width: 80px;
+        max-width: 80px;
+        height: 160px;
+        min-height: 160px;
+        max-height: 160px;
+    }
+
+    .table-hand-row>.deal-card,
+    .small-card-back {
+        flex-basis: 84px;
+        width: 84px;
+        min-width: 84px;
+        max-width: 84px;
+        height: 168px;
+        min-height: 168px;
+        max-height: 168px;
+    }
+
+    .deal-card-header h3 {
+        font-size: 0.50rem;
+    }
+
+    .deal-card-text {
+        font-size: 0.44rem;
+    }
+}
 
 .game-shell,
 .game-table,
@@ -782,6 +1173,8 @@ select {
 /* Phone press */
 @media (max-width: 768px) {
     .table-hand-row {
+        --default-card-overlap: 24px;
+        --min-visible-card-width: 24px;
         padding-top: 44px;
         padding-bottom: 18px;
     }
@@ -804,6 +1197,119 @@ select {
     }
 }
 
+@media (max-width: 768px) {
+    .game-table-4 {
+        gap: 4px;
+        grid-template-columns: minmax(54px, 0.58fr) minmax(92px, 1fr) minmax(54px, 0.58fr);
+        grid-template-rows: auto minmax(118px, auto) auto;
+        padding: 4px;
+        border-width: 3px;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    .game-table-4 .table-seat,
+    .game-table-4 .player-area,
+    .game-table-4 .hand-zone,
+    .game-table-4 .table-zone,
+    .game-table-4 .table-hand-row {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .game-table-4 .player-area {
+        gap: 3px;
+        padding: 3px;
+        border-width: 2px;
+        border-radius: 10px;
+    }
+
+    .game-table-4 .table-center {
+        min-width: 0;
+        border-width: 2px;
+        border-radius: 14px;
+    }
+
+    .game-table-4 .empty-table-label {
+        width: clamp(48px, 18vw, 76px);
+        border-width: 2px;
+        border-radius: 10px;
+        font-size: 0.55rem;
+        letter-spacing: 0.06em;
+    }
+
+    .table-seat-left .player-area-header,
+    .table-seat-right .player-area-header {
+        gap: 3px;
+    }
+
+    .table-seat-left .player-area-header h2,
+    .table-seat-right .player-area-header h2 {
+        max-width: 100%;
+        padding: 2px 4px;
+        border-width: 1px;
+        border-radius: 5px;
+        font-size: 0.52rem;
+    }
+
+    .table-seat-left .player-header-actions,
+    .table-seat-right .player-header-actions {
+        gap: 3px;
+    }
+
+    .table-seat-left .player-header-actions span,
+    .table-seat-right .player-header-actions span {
+        min-width: 0;
+        font-size: 0.48rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .table-seat-left .property-groups,
+    .table-seat-right .property-groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2px;
+    }
+
+    .table-seat-left .property-group,
+    .table-seat-right .property-group {
+        height: 24px;
+        grid-template-rows: 7px 1fr;
+        border-width: 1px;
+        border-radius: 4px;
+    }
+
+    .table-seat-left .property-card-slots,
+    .table-seat-right .property-card-slots {
+        gap: 1px;
+        padding: 1px;
+    }
+
+    .table-seat-left .hidden-hand-row,
+    .table-seat-right .hidden-hand-row {
+        --default-card-overlap: 24px;
+        --min-visible-card-width: 8px;
+        padding: 1px 0 3px;
+    }
+
+    .table-seat-left .hidden-hand-row>.small-card-back,
+    .table-seat-right .hidden-hand-row>.small-card-back {
+        flex-basis: 34px;
+        width: 34px;
+        min-width: 34px;
+        max-width: 34px;
+        height: 48px;
+        min-height: 48px;
+        max-height: 48px;
+        border-width: 2px;
+        border-radius: 6px;
+        font-size: 0.36rem;
+        letter-spacing: 0;
+    }
+}
+
 .player-header-actions {
     display: flex;
     align-items: center;
@@ -814,12 +1320,21 @@ select {
     padding: 4px 7px;
     font-size: 0.68rem;
     border-radius: 7px;
+    white-space: nowrap;
+}
+
+.player-name-controls {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .player-name-timer {
     position: relative;
     display: inline-grid;
     place-items: center;
+    min-width: 0;
 }
 
 .player-name-timer h2 {
@@ -910,4 +1425,75 @@ select {
 .claim-success {
     color: #16a34a;
     font-weight: 900;
+}
+
+.language-page {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--green), var(--dark-green));
+}
+
+.language-card {
+    width: min(92vw, 520px);
+    min-width: 0;
+    display: grid;
+    gap: 18px;
+    padding: clamp(18px, 4vw, 24px);
+    background: var(--cream);
+    border: 5px solid var(--ink);
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+.language-card .game-logo {
+    min-width: 0;
+}
+
+.language-card .game-logo span {
+    max-width: 100%;
+    padding: 8px 14px;
+    font-size: clamp(1.8rem, 6vw, 3.5rem);
+    overflow-wrap: anywhere;
+}
+
+.language-card .game-logo strong {
+    max-width: 100%;
+    padding: 7px 20px;
+    font-size: clamp(2rem, 6.5vw, 3.8rem);
+}
+
+.language-card h1 {
+    display: grid;
+    gap: 6px;
+    line-height: 1.1;
+}
+
+.language-card h1 span {
+    font-size: 0.78em;
+}
+
+.language-card h1,
+.language-card p {
+    margin: 0;
+}
+
+.language-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.language-buttons button {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .language-buttons {
+        grid-template-columns: 1fr;
+    }
 }

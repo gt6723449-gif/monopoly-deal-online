@@ -365,6 +365,24 @@ export const CARD_DEFINITIONS = [
     meta: { colors: ["green", "darkBlue"], activeColor: "green" },
   },
   {
+    id: "wild_light_blue_railroad",
+    type: "wild",
+    name: "Light Blue / Railroad Wild",
+    value: 4,
+    count: 1,
+    description: "Can be used as Light Blue or Railroad.",
+    meta: { colors: ["lightBlue", "railroad"], activeColor: "lightBlue" },
+  },
+  {
+    id: "wild_railroad_green",
+    type: "wild",
+    name: "Railroad / Green Wild",
+    value: 4,
+    count: 1,
+    description: "Can be used as Railroad or Green.",
+    meta: { colors: ["railroad", "green"], activeColor: "railroad" },
+  },
+  {
     id: "wild_railroad_utility",
     type: "wild",
     name: "Railroad / Utility Wild",
@@ -564,6 +582,18 @@ export const CARD_DEFINITIONS = [
     meta: {
       actionType: "justSayNo",
       canBePlayedOutsideTurn: true,
+    },
+  },
+  {
+    id: "action_pass_go",
+    type: "action",
+    name: "Pass Go",
+    value: 1,
+    count: 10,
+    description: "Draw 2 extra cards.",
+    meta: {
+      actionType: "passGo",
+      drawCount: 2,
     },
   },
   {

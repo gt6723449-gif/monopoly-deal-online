@@ -1,6 +1,6 @@
 import { createDeck, drawCards } from "./deckEngine";
 
-export function createInitialGame({ playerNames }) {
+export function createInitialGame({ playerNames, botPlayerIds = [], mode = "local" }) {
   let deck = createDeck();
 
   const players = playerNames.map((name, index) => {
@@ -27,14 +27,15 @@ export function createInitialGame({ playerNames }) {
       },
       propertySetModifiers: {},
       isConnected: true,
-      isBot: false,
+      isBot: botPlayerIds.includes(`player_${index + 1}`),
     };
   });
 
   return {
     id: "local_game_1",
     status: "playing",
-    mode: "local",
+    mode,
+    humanPlayerId: players[0].id,
 
     players,
 

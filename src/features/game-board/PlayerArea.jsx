@@ -1,65 +1,79 @@
 import { getCompletedPropertySetCount } from "../../game/engine/winEngine";
+import { t } from "../../i18n/translations";
 import { PlayerHand } from "./PlayerHand";
 import { PlayerProperties } from "./PlayerProperties";
-import { TurnTimer } from "./TurnTimer"
+import { TurnTimer } from "./TurnTimer";
 
 export function PlayerArea({
   player,
   currentPlayer,
   game,
   dispatch,
-  isCurrentPlayer,
+  isActivePlayer,
+  isHumanPlayer,
   selectedColors,
   setSelectedColors,
   selectedTargets,
   setSelectedTargets,
+  language,
 }) {
   const completedSetCount = getCompletedPropertySetCount(player);
+  const canUseHandActions = isHumanPlayer && isActivePlayer;
 
   return (
     <section
       className={
-        isCurrentPlayer ? "player-area current-player-area" : "player-area"
+        isActivePlayer ? "player-area current-player-area" : "player-area"
       }
     >
       <header className="player-area-header">
-        <div className={isCurrentPlayer ? "player-name-timer active" : "player-name-timer"}>
-          {isCurrentPlayer && (
-            <TurnTimer
-              game={game}
-              currentPlayer={currentPlayer}
-              dispatch={dispatch}
-            />
-          )}
+        <div className="player-name-controls">
+          <div
+            className={
+              isActivePlayer ? "player-name-timer active" : "player-name-timer"
+            }
+          >
+            {isActivePlayer && (
+              <TurnTimer
+                game={game}
+                player={player}
+                dispatch={dispatch}
+                isRunning={isHumanPlayer}
+              />
+            )}
 
-          <h2>{player.name}</h2>
+            <h2>{player.name}</h2>
+          </div>
+
+          {isActivePlayer &&
+            isHumanPlayer &&
+            game.status === "playing" &&
+            game.turn.phase === "action" && (
+              <button
+                type="button"
+                className="small-end-turn-button"
+                onClick={() =>
+                  dispatch({
+                    type: "END_TURN",
+                    payload: {
+                      playerId: currentPlayer.id,
+                    },
+                  })
+                }
+              >
+                {t(language, "endTurnShort")}
+              </button>
+            )}
         </div>
 
         <div className="player-header-actions">
-          <span>Sets {completedSetCount}/3</span>
-
-          {isCurrentPlayer && game.status === "playing" && game.turn.phase === "action" && (
-            <button
-              type="button"
-              className="small-end-turn-button"
-              onClick={() =>
-                dispatch({
-                  type: "END_TURN",
-                  payload: {
-                    playerId: currentPlayer.id,
-                  },
-                })
-              }
-            >
-              End Turn
-            </button>
-          )}
+          <span>
+            {t(language, "sets")} {completedSetCount}/3
+          </span>
         </div>
-
-
       </header>
 
-      {!isCurrentPlayer && (
+      {!isHumanPlayer && (
         <>
           <PlayerHand
             player={player}
@@ -71,6 +85,8 @@ export function PlayerArea({
             setSelectedColors={setSelectedColors}
             selectedTargets={selectedTargets}
             setSelectedTargets={setSelectedTargets}
+            language={language}
+            canUseActions={false}
           />
 
           <PlayerProperties
@@ -82,7 +98,7 @@ export function PlayerArea({
         </>
       )}
 
-      {isCurrentPlayer && (
+      {isHumanPlayer && (
         <>
           <PlayerProperties
             player={player}
@@ -100,6 +116,8 @@ export function PlayerArea({
             setSelectedColors={setSelectedColors}
             selectedTargets={selectedTargets}
             setSelectedTargets={setSelectedTargets}
+            language={language}
+            canUseActions={canUseHandActions}
           />
         </>
       )}

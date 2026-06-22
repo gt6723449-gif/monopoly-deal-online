@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { PROPERTY_SETS } from "../../game/data/propertySets";
+import { t } from "../../i18n/translations";
 
 function formatColorName(color) {
     return PROPERTY_SETS[color]?.label || color;
 }
 
-export function PaymentPanel({ game, dispatch }) {
+export function PaymentPanel({ game, dispatch, language }) {
     const [selectedCardIds, setSelectedCardIds] = useState([]);
 
     const pendingPayment = game.pendingPayment;
@@ -23,6 +24,10 @@ export function PaymentPanel({ game, dispatch }) {
     );
 
     if (!payer || !receiver) {
+        return null;
+    }
+
+    if (payer.id !== game.humanPlayerId) {
         return null;
     }
 
@@ -84,81 +89,86 @@ export function PaymentPanel({ game, dispatch }) {
     }
 
     return (
-        <section className="payment-panel">
-            <h2>Payment Required</h2>
+        <div className="payment-modal-backdrop">
+            <section
+                className="payment-panel payment-modal"
+                dir={language === "ar" ? "rtl" : "ltr"}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="payment-panel-title"
+            >
+                <h2 id="payment-panel-title">{t(language, "paymentRequired")}</h2>
 
-            <p>
-                <strong>{payer.name}</strong> owes <strong>${pendingPayment.amount}M</strong>{" "}
-                to <strong>{receiver.name}</strong>.
-            </p>
-
-            <p>
-                Reason: <strong>{pendingPayment.reason}</strong>
-            </p>
-
-            <p>
-                Selected payment: <strong>${selectedTotal}M</strong>
-            </p>
-
-            <p>
-                Available assets: <strong>${totalPayableAssets}M</strong>
-            </p>
-
-            <p>
-                Required payment: <strong>${minimumRequiredPayment}M</strong>
-            </p>
-
-            <p className="small-note">
-                You can only pay with bank cards or properties already on the table.
-                Cards in hand cannot be used.
-            </p>
-
-            <div className="payment-card-grid">
-                {payableCards.map((card) => {
-                    const isSelected = selectedCardIds.includes(card.instanceId);
-
-                    return (
-                        <button
-                            type="button"
-                            key={card.instanceId}
-                            className={isSelected ? "payment-card selected-payment-card" : "payment-card"}
-                            onClick={() => toggleCard(card.instanceId)}
-                        >
-                            <strong>{card.name}</strong>
-                            <span>${card.value}M</span>
-                            <small>
-                                {card.paymentSource === "bank"
-                                    ? "Bank"
-                                    : `Property: ${formatColorName(card.paymentGroup)}`}
-                            </small>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {payableCards.length === 0 && (
-                <p className="notice">
-                    {payer.name} has no bank cards or properties to pay with.
+                <p className="payment-summary">
+                    <strong>{payer.name}</strong> {t(language, "owes")}{" "}
+                    <strong>${pendingPayment.amount}M</strong> {t(language, "to")}{" "}
+                    <strong>{receiver.name}</strong>.
                 </p>
-            )}
 
-            <div className="payment-actions">
-                <button
-                    type="button"
-                    onClick={handlePayAll}
-                    disabled={payableCards.length === 0}
-                >
-                    Pay All
-                </button>
+                <div className="payment-totals">
+                    <span>
+                        {t(language, "requiredPayment")}:{" "}
+                        <strong>${minimumRequiredPayment}M</strong>
+                    </span>
+                    <span>
+                        {t(language, "selectedPayment")}:{" "}
+                        <strong>${selectedTotal}M</strong>
+                    </span>
+                </div>
 
-                <button
-                    type="button"
-                    onClick={handlePayDebt}
-                    disabled={selectedTotal < minimumRequiredPayment}
-                >
-                    Pay Debt
-                </button>
-            </div>
-        </section>
+                <div className="payment-card-grid">
+                    {payableCards.map((card) => {
+                        const isSelected = selectedCardIds.includes(card.instanceId);
+
+                        return (
+                            <button
+                                type="button"
+                                key={card.instanceId}
+                                className={
+                                    isSelected
+                                        ? "payment-card selected-payment-card"
+                                        : "payment-card"
+                                }
+                                onClick={() => toggleCard(card.instanceId)}
+                            >
+                                <strong>{card.name}</strong>
+                                <span>${card.value}M</span>
+                                <small>
+                                    {card.paymentSource === "bank"
+                                        ? t(language, "bank")
+                                        : `${t(language, "property")}: ${formatColorName(
+                                            card.paymentGroup
+                                        )}`}
+                                </small>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {payableCards.length === 0 && (
+                    <p className="notice">
+                        {payer.name} {t(language, "noAssetsToPay")}
+                    </p>
+                )}
+
+                <div className="payment-actions">
+                    <button
+                        type="button"
+                        onClick={handlePayAll}
+                        disabled={payableCards.length === 0}
+                    >
+                        {t(language, "payAll")}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handlePayDebt}
+                        disabled={selectedTotal < minimumRequiredPayment}
+                    >
+                        {t(language, "payDebt")}
+                    </button>
+                </div>
+            </section>
+        </div>
     );
 }

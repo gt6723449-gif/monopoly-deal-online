@@ -138,6 +138,152 @@ function canUseAction(state, playerId) {
     );
 }
 
+function getRandomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function getPlayableRentColor(player, card) {
+    const colors = card.meta.colors || [];
+    return colors.find((color) => calculateRentForGroup(player, color) > 0);
+}
+
+function getBotActionForCard(state, player, card) {
+    if (card.type === "rent") {
+        const color = getPlayableRentColor(player, card);
+        const targets = state.players.filter((target) => target.id !== player.id);
+
+        if (!color || targets.length === 0) return null;
+
+        return {
+            type: "PLAY_RENT_CARD",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                targetPlayerId: getRandomItem(targets).id,
+                color,
+            },
+        };
+    }
+
+    if (card.type !== "action") return null;
+
+    const actionType = card.meta.actionType;
+    const targets = state.players.filter((target) => target.id !== player.id);
+
+    if (actionType === "debtCollector" && targets.length > 0) {
+        return {
+            type: "PLAY_MONEY_ACTION_CARD",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                targetPlayerId: getRandomItem(targets).id,
+            },
+        };
+    }
+
+    if (actionType === "birthday" || actionType === "passGo") {
+        return {
+            type: "PLAY_MONEY_ACTION_CARD",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+            },
+        };
+    }
+
+    if (actionType === "slyDeal") {
+        const stealableProperties = targets.flatMap((target) =>
+            Object.keys(target.properties).flatMap((group) => {
+                if (isPropertySetComplete(target, group)) return [];
+                return target.properties[group];
+            })
+        );
+
+        if (stealableProperties.length === 0) return null;
+
+        return {
+            type: "PLAY_SLY_DEAL",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                targetPropertyCardId: getRandomItem(stealableProperties).instanceId,
+            },
+        };
+    }
+
+    if (actionType === "dealBreaker") {
+        const fullSets = targets.flatMap((target) =>
+            Object.keys(target.properties)
+                .filter((group) => isPropertySetComplete(target, group))
+                .map((group) => ({ targetPlayerId: target.id, targetGroup: group }))
+        );
+
+        if (fullSets.length === 0) return null;
+
+        const targetSet = getRandomItem(fullSets);
+
+        return {
+            type: "PLAY_DEAL_BREAKER",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                ...targetSet,
+            },
+        };
+    }
+
+    if (actionType === "forcedDeal") {
+        const ownProperties = Object.keys(player.properties).flatMap((group) =>
+            player.properties[group]
+        );
+        const targetProperties = targets.flatMap((target) =>
+            Object.keys(target.properties).flatMap((group) => {
+                if (isPropertySetComplete(target, group)) return [];
+                return target.properties[group];
+            })
+        );
+
+        if (ownProperties.length === 0 || targetProperties.length === 0) return null;
+
+        return {
+            type: "PLAY_FORCED_DEAL",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                offeredPropertyCardId: getRandomItem(ownProperties).instanceId,
+                targetPropertyCardId: getRandomItem(targetProperties).instanceId,
+            },
+        };
+    }
+
+    if (actionType === "house" || actionType === "hotel") {
+        const targetGroups = Object.keys(player.properties).filter((group) => {
+            const setDefinition = PROPERTY_SETS[group];
+            const modifiers = player.propertySetModifiers[group] || {};
+
+            if (!setDefinition?.allowsHouse || !setDefinition?.allowsHotel) return false;
+            if (!isPropertySetComplete(player, group)) return false;
+            if (actionType === "house" && modifiers.house) return false;
+            if (actionType === "hotel" && (modifiers.hotel || !modifiers.house)) return false;
+
+            return true;
+        });
+
+        if (targetGroups.length === 0) return null;
+
+        return {
+            type: "PLAY_SET_MODIFIER",
+            payload: {
+                playerId: player.id,
+                cardInstanceId: card.instanceId,
+                targetGroup: getRandomItem(targetGroups),
+            },
+        };
+    }
+
+    return null;
+}
+
 function incrementActionCount(state) {
     return {
         ...state.turn,
@@ -175,6 +321,8 @@ export function gameReducer(state, action) {
         case "START_NEW_GAME": {
             return createInitialGame({
                 playerNames: action.payload.playerNames,
+                botPlayerIds: action.payload.botPlayerIds,
+                mode: action.payload.mode,
             });
         }
         case "DRAW_CARDS": {
@@ -816,8 +964,42 @@ export function gameReducer(state, action) {
 
             const actionType = card.meta.actionType;
 
-            if (actionType !== "debtCollector" && actionType !== "birthday") {
+            if (
+                actionType !== "debtCollector" &&
+                actionType !== "birthday" &&
+                actionType !== "passGo"
+            ) {
                 return state;
+            }
+
+            if (actionType === "passGo") {
+                const drawResult = drawCardsWithReshuffle({
+                    deck: state.deck,
+                    discardPile: state.discardPile,
+                    count: card.meta.drawCount || 2,
+                });
+
+                const updatedPlayers = [...state.players];
+
+                updatedPlayers[playerIndex] = {
+                    ...player,
+                    hand: [...updatedHand, ...drawResult.drawnCards],
+                };
+
+                return {
+                    ...state,
+                    players: updatedPlayers,
+                    deck: drawResult.remainingDeck,
+                    discardPile: [...drawResult.remainingDiscardPile, card],
+                    turn: incrementActionCount(state),
+                    log: [
+                        ...state.log,
+                        {
+                            id: `log_${state.log.length + 1}`,
+                            message: `${player.name} played ${card.name} and drew ${drawResult.drawnCards.length} card(s).`,
+                        },
+                    ],
+                };
             }
 
             let payments = [];
@@ -1588,6 +1770,12 @@ export function gameReducer(state, action) {
 
             const randomIndex = Math.floor(Math.random() * player.hand.length);
             const randomCard = player.hand[randomIndex];
+
+            const botAction = getBotActionForCard(state, player, randomCard);
+
+            if (botAction) {
+                return gameReducer(state, botAction);
+            }
 
             const updatedHand = player.hand.filter(
                 (card) => card.instanceId !== randomCard.instanceId

@@ -1,4 +1,5 @@
 import { CardView } from "../../components/CardView/CardView";
+import { t } from "../../i18n/translations";
 import { PlayerArea } from "./PlayerArea";
 
 export function GameTable({
@@ -9,55 +10,75 @@ export function GameTable({
   setSelectedColors,
   selectedTargets,
   setSelectedTargets,
+  language,
 }) {
-  const opponents = game.players.filter(
-    (player) => player.id !== currentPlayer.id
+  const humanPlayer =
+    game.players.find((player) => player.id === game.humanPlayerId) ||
+    game.players[0];
+  const otherPlayers = game.players.filter(
+    (player) => player.id !== humanPlayer.id
   );
+
+  const seats =
+    game.players.length === 4
+      ? {
+          top: otherPlayers[1],
+          right: otherPlayers[0],
+          bottom: humanPlayer,
+          left: otherPlayers[2],
+        }
+      : {
+          top: otherPlayers[0],
+          bottom: humanPlayer,
+        };
 
   const lastDiscardedCard = game.discardPile.at(-1);
 
-  return (
-    <section className="game-table">
-      <div className="opponents-row">
-        {opponents.map((player) => (
-          <PlayerArea
-            key={player.id}
-            player={player}
-            currentPlayer={currentPlayer}
-            game={game}
-            dispatch={dispatch}
-            isCurrentPlayer={false}
-            selectedColors={selectedColors}
-            setSelectedColors={setSelectedColors}
-            selectedTargets={selectedTargets}
-            setSelectedTargets={setSelectedTargets}
-          />
-        ))}
-      </div>
+  function renderSeat(position, player) {
+    if (!player) return null;
 
-      <div className="table-center">
-        {lastDiscardedCard ? (
-          <div className="table-played-card">
-            <CardView card={lastDiscardedCard} />
-          </div>
-        ) : (
-          <div className="empty-table-label">TABLE</div>
-        )}
-      </div>
+    const isCurrentPlayer = player.id === currentPlayer.id;
+    const isHumanPlayer = player.id === humanPlayer.id;
 
-      <div className="current-player-row">
+    return (
+      <div className={`table-seat table-seat-${position}`}>
         <PlayerArea
-          player={currentPlayer}
+          player={player}
           currentPlayer={currentPlayer}
           game={game}
           dispatch={dispatch}
-          isCurrentPlayer
+          isActivePlayer={isCurrentPlayer}
+          isHumanPlayer={isHumanPlayer}
           selectedColors={selectedColors}
           setSelectedColors={setSelectedColors}
           selectedTargets={selectedTargets}
           setSelectedTargets={setSelectedTargets}
+          language={language}
         />
       </div>
+    );
+  }
+
+  return (
+    <section
+      className={`game-table game-table-${game.players.length}`}
+      dir="ltr"
+    >
+      {renderSeat("top", seats.top)}
+      {renderSeat("left", seats.left)}
+
+      <div className="table-center">
+        {lastDiscardedCard ? (
+          <div className="table-played-card">
+            <CardView card={lastDiscardedCard} language={language} />
+          </div>
+        ) : (
+          <div className="empty-table-label">{t(language, "table")}</div>
+        )}
+      </div>
+
+      {renderSeat("right", seats.right)}
+      {renderSeat("bottom", seats.bottom)}
     </section>
   );
 }

@@ -9,22 +9,39 @@ import { useGame } from "../hooks/useGame";
 import { AutoTurnEffects } from "../features/game-board/AutoTurnEffects";
 import { GameTable } from "../features/game-board/GameTable";
 import { WinnerClaimPage } from "../features/game-board/WinnerClaimPage";
+import { LanguageSelectPage } from "../features/language/LanguageSelectPage";
+
+
+
+
 
 export default function App() {
   const { game, dispatch } = useGame();
   const [hasStarted, setHasStarted] = useState(false);
   const [selectedColors, setSelectedColors] = useState({});
   const [selectedTargets, setSelectedTargets] = useState({});
+  const [language, setLanguage] = useState(null);
   const PRIZE_AMOUNT = "$100";
 
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
   );
 
+  if (!language) {
+    return (
+      <LanguageSelectPage
+        onSelectLanguage={(selectedLanguage) => {
+          setLanguage(selectedLanguage);
+        }}
+      />
+    );
+  }
+
   if (!hasStarted) {
     return (
       <GameSetup
         dispatch={dispatch}
+        language={language}
         onStart={() => setHasStarted(true)}
       />
     );
@@ -39,11 +56,16 @@ export default function App() {
       <WinnerClaimPage
         winner={winner}
         amount={PRIZE_AMOUNT}
+        language={language}
         onPlayAgain={() => {
           dispatch({
             type: "START_NEW_GAME",
             payload: {
               playerNames: game.players.map((player) => player.name),
+              botPlayerIds: game.players
+                .filter((player) => player.isBot)
+                .map((player) => player.id),
+              mode: game.mode,
             },
           });
         }}
@@ -76,11 +98,12 @@ export default function App() {
           game={game}
           currentPlayer={currentPlayer}
           dispatch={dispatch}
+          language={language}
         />
 
-        <ResponsePanel game={game} dispatch={dispatch} />
+        <ResponsePanel game={game} dispatch={dispatch} language={language}/>
 
-        <PaymentPanel game={game} dispatch={dispatch} />
+        <PaymentPanel game={game} dispatch={dispatch} language={language}/>
 
         {!canAct && game.turn.phase === "action" && game.status === "playing" && (
           <p className="notice">No actions left. End your turn.</p>
@@ -94,6 +117,7 @@ export default function App() {
           setSelectedColors={setSelectedColors}
           selectedTargets={selectedTargets}
           setSelectedTargets={setSelectedTargets}
+          language={language}
         />
       </section>
     </main>

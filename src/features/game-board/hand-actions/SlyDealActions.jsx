@@ -1,3 +1,5 @@
+import { t } from "../../../i18n/translations";
+
 export function SlyDealActions({
   card,
   canAct,
@@ -5,6 +7,7 @@ export function SlyDealActions({
   selectedTargets,
   onTargetChange,
   onPlaySlyDeal,
+  language,
 }) {
   return (
     <>
@@ -21,7 +24,8 @@ export function SlyDealActions({
         >
           {stealableProperties.map((item) => (
             <option value={item.card.instanceId} key={item.card.instanceId}>
-              Steal {item.card.name} from {item.playerName}
+              {t(language, "steal")} {item.card.name} {t(language, "from")}{" "}
+              {item.playerName}
             </option>
           ))}
         </select>
@@ -32,7 +36,7 @@ export function SlyDealActions({
         onClick={() => onPlaySlyDeal(card)}
         disabled={!canAct || stealableProperties.length === 0}
       >
-        Play Sly Deal
+        {t(language, "playSlyDeal")}
       </button>
     </>
   );

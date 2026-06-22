@@ -1,3 +1,5 @@
+import { t } from "../../../i18n/translations";
+
 export function SetModifierActions({
   card,
   canAct,
@@ -5,6 +7,7 @@ export function SetModifierActions({
   selectedTargets,
   onTargetChange,
   onPlaySetModifier,
+  language,
 }) {
   return (
     <>
@@ -18,7 +21,7 @@ export function SetModifierActions({
         >
           {modifierTargets.map((item) => (
             <option value={item.group} key={item.group}>
-              Add to {item.label}
+              {t(language, "addTo")} {item.label}
             </option>
           ))}
         </select>
@@ -29,7 +32,7 @@ export function SetModifierActions({
         onClick={() => onPlaySetModifier(card)}
         disabled={!canAct || modifierTargets.length === 0}
       >
-        Play {card.name}
+        {t(language, "playCard")} {card.name}
       </button>
     </>
   );

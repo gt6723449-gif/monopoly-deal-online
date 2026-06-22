@@ -1,4 +1,6 @@
-export function ResponsePanel({ game, dispatch }) {
+import { t } from "../../i18n/translations";
+
+export function ResponsePanel({ game, dispatch, language }) {
     const pendingAction = game.pendingAction;
 
     if (!pendingAction) {
@@ -16,8 +18,7 @@ export function ResponsePanel({ game, dispatch }) {
     }
 
     const justSayNoCard = respondingPlayer.hand.find(
-        (card) =>
-            card.type === "action" && card.meta.actionType === "justSayNo"
+        (card) => card.type === "action" && card.meta.actionType === "justSayNo"
     );
 
     function handleDecline() {
@@ -42,24 +43,24 @@ export function ResponsePanel({ game, dispatch }) {
     }
 
     return (
-        <section className="response-panel">
-            <h2>Response Needed</h2>
+        <section className="response-panel" dir={language === "ar" ? "rtl" : "ltr"}>
+            <h2>{t(language, "responseNeeded")}</h2>
 
             <p>
-                <strong>{respondingPlayer.name}</strong> can respond to{" "}
+                <strong>{respondingPlayer.name}</strong> {t(language, "canRespondTo")}{" "}
                 <strong>{pendingAction.sourceCard.name}</strong>.
             </p>
 
             {justSayNoCard ? (
                 <button type="button" onClick={handlePlayJustSayNo}>
-                    Play Just Say No
+                    {t(language, "playJustSayNo")}
                 </button>
             ) : (
-                <p>This player has no Just Say No card.</p>
+                <p>{t(language, "noJustSayNo")}</p>
             )}
 
             <button type="button" onClick={handleDecline}>
-                Do Not Block
+                {t(language, "doNotBlock")}
             </button>
         </section>
     );

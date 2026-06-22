@@ -1,3 +1,5 @@
+import { t } from "../../../i18n/translations";
+
 export function DealBreakerActions({
   card,
   canAct,
@@ -5,6 +7,7 @@ export function DealBreakerActions({
   selectedTargets,
   onTargetChange,
   onPlayDealBreaker,
+  language,
 }) {
   return (
     <>
@@ -18,7 +21,7 @@ export function DealBreakerActions({
         >
           {stealableFullSets.map((item) => (
             <option value={item.label} key={item.label}>
-              Steal {item.label}
+              {t(language, "steal")} {item.label}
             </option>
           ))}
         </select>
@@ -29,7 +32,7 @@ export function DealBreakerActions({
         onClick={() => onPlayDealBreaker(card)}
         disabled={!canAct || stealableFullSets.length === 0}
       >
-        Play Deal Breaker
+        {t(language, "playDealBreaker")}
       </button>
     </>
   );

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 
-const TURN_SECONDS = 10;
+const TURN_SECONDS = 30;
 
-export function TurnTimer({ game, currentPlayer, dispatch }) {
+export function TurnTimer({ game, player, dispatch, isRunning = false }) {
     const [timeLeft, setTimeLeft] = useState(TURN_SECONDS);
 
     const timerKey = `${game.currentPlayerId}_${game.turn.actionsUsed}_${game.turn.phase}`;
 
     const isActive =
+        isRunning &&
         game.status === "playing" &&
         game.turn.phase === "action" &&
-        game.currentPlayerId === currentPlayer.id &&
+        game.currentPlayerId === player.id &&
         game.turn.actionsUsed < game.turn.maxActions;
 
     useEffect(() => {
@@ -22,9 +23,9 @@ export function TurnTimer({ game, currentPlayer, dispatch }) {
 
         if (timeLeft <= 0) {
             dispatch({
-                type: "AUTO_PLAY_RANDOM_CARD",
+                type: player.hand.length > 0 ? "AUTO_PLAY_RANDOM_CARD" : "END_TURN",
                 payload: {
-                    playerId: currentPlayer.id,
+                    playerId: player.id,
                 },
             });
 
@@ -36,7 +37,7 @@ export function TurnTimer({ game, currentPlayer, dispatch }) {
         }, 1000);
 
         return () => window.clearTimeout(timeoutId);
-    }, [isActive, timeLeft, currentPlayer.id, dispatch]);
+    }, [isActive, timeLeft, player.id, player.hand.length, dispatch]);
 
     const progress = Math.max(0, Math.min(1, timeLeft / TURN_SECONDS));
 

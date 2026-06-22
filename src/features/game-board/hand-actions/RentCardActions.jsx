@@ -1,4 +1,5 @@
 import { PROPERTY_SETS } from "../../../game/data/propertySets";
+import { t } from "../../../i18n/translations";
 import { getDoubleRentCards } from "../playerHandHelpers";
 
 function formatColorName(color) {
@@ -17,6 +18,7 @@ export function RentCardActions({
   onColorChange,
   onTargetChange,
   onPlayRent,
+  language,
 }) {
   const availableColors = card.meta.colors || [];
   const selectedColor = selectedColors[card.instanceId] || availableColors[0];
@@ -33,7 +35,7 @@ export function RentCardActions({
         >
           {targetablePlayers.map((targetPlayer) => (
             <option value={targetPlayer.id} key={targetPlayer.id}>
-              Target: {targetPlayer.name}
+              {t(language, "target")}: {targetPlayer.name}
             </option>
           ))}
         </select>
@@ -61,7 +63,7 @@ export function RentCardActions({
             type="checkbox"
             checked={Boolean(
               selectedTargets[
-                `${card.instanceId}_double_${doubleRentCard.instanceId}`
+              `${card.instanceId}_double_${doubleRentCard.instanceId}`
               ]
             )}
             onChange={(event) =>
@@ -72,12 +74,12 @@ export function RentCardActions({
             }
             disabled={!canAct}
           />
-          Use {doubleRentCard.name}
+          {t(language, "use")} {doubleRentCard.name}
         </label>
       ))}
 
       <button type="button" onClick={() => onPlayRent(card)} disabled={!canAct}>
-        Play Rent
+        {t(language, "playRent")}
       </button>
     </>
   );

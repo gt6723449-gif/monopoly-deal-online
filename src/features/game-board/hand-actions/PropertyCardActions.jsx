@@ -1,4 +1,5 @@
 import { PROPERTY_SETS } from "../../../game/data/propertySets";
+import { t } from "../../../i18n/translations";
 
 function formatColorName(color) {
   return PROPERTY_SETS[color]?.label || color;
@@ -10,6 +11,7 @@ export function PropertyCardActions({
   selectedColors,
   onColorChange,
   onPlayProperty,
+  language,
 }) {
   const availableColors = card.meta.colors || [];
   const selectedColor = selectedColors[card.instanceId] || availableColors[0];
@@ -37,7 +39,7 @@ export function PropertyCardActions({
         onClick={() => onPlayProperty(card)}
         disabled={!canAct}
       >
-        Play Property
+        {t(language, "playProperty")}
       </button>
     </>
   );

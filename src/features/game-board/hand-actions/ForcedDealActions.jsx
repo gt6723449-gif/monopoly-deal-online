@@ -1,3 +1,5 @@
+import { t } from "../../../i18n/translations";
+
 export function ForcedDealActions({
   card,
   canAct,
@@ -6,6 +8,7 @@ export function ForcedDealActions({
   selectedTargets,
   onTargetChange,
   onPlayForcedDeal,
+  language,
 }) {
   return (
     <>
@@ -22,7 +25,7 @@ export function ForcedDealActions({
         >
           {ownProperties.map((item) => (
             <option value={item.card.instanceId} key={item.card.instanceId}>
-              Give {item.card.name}
+              {t(language, "give")} {item.card.name}
             </option>
           ))}
         </select>
@@ -41,7 +44,8 @@ export function ForcedDealActions({
         >
           {forcedDealTargets.map((item) => (
             <option value={item.card.instanceId} key={item.card.instanceId}>
-              Take {item.card.name} from {item.playerName}
+              {t(language, "take")} {item.card.name} {t(language, "from")}{" "}
+              {item.playerName}
             </option>
           ))}
         </select>
@@ -54,7 +58,7 @@ export function ForcedDealActions({
           !canAct || ownProperties.length === 0 || forcedDealTargets.length === 0
         }
       >
-        Play Forced Deal
+        {t(language, "playForcedDeal")}
       </button>
     </>
   );

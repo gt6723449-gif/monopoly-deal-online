@@ -1,17 +1,22 @@
 import { useState } from "react";
+import { t } from "../../i18n/translations";
 
-export function GameSetup({ dispatch, onStart }) {
+const BOT_NAMES = {
+  en: ["Omar", "Sara", "Layan"],
+  ar: ["\u0639\u0645\u0631", "\u0633\u0627\u0631\u0629", "\u0644\u064a\u0627\u0646"],
+};
+
+export function GameSetup({ dispatch, language, onStart }) {
+  const botNames = BOT_NAMES[language] || BOT_NAMES.en;
   const [playerCount, setPlayerCount] = useState(2);
+  const [playMode, setPlayMode] = useState("bots");
   const [playerNames, setPlayerNames] = useState([
-    "Roy",
-    "Player 2",
-    "Player 3",
-    "Player 4",
+    "",
+    botNames[0],
+    botNames[1],
+    botNames[2],
   ]);
-
-  function handlePlayerCountChange(event) {
-    setPlayerCount(Number(event.target.value));
-  }
+  const canStartGame = playerNames[0].trim().length > 0;
 
   function handleNameChange(index, value) {
     setPlayerNames((current) => {
@@ -24,14 +29,28 @@ export function GameSetup({ dispatch, onStart }) {
   function handleStartGame(event) {
     event.preventDefault();
 
+    if (!canStartGame) return;
+
     const activePlayerNames = playerNames
       .slice(0, playerCount)
-      .map((name, index) => name.trim() || `Player ${index + 1}`);
+      .map((name, index) => {
+        if (playMode === "bots" && index > 0) {
+          return botNames[index - 1];
+        }
+
+        return name.trim() || `${t(language, "playerName")} ${index + 1}`;
+      });
+    const botPlayerIds =
+      playMode === "bots"
+        ? activePlayerNames.slice(1).map((_, index) => `player_${index + 2}`)
+        : [];
 
     dispatch({
       type: "START_NEW_GAME",
       payload: {
         playerNames: activePlayerNames,
+        botPlayerIds,
+        mode: playMode,
       },
     });
 
@@ -39,42 +58,76 @@ export function GameSetup({ dispatch, onStart }) {
   }
 
   return (
-    <main className="start-page">
+    <main className="start-page" dir={language === "ar" ? "rtl" : "ltr"}>
       <section className="start-card">
         <div className="game-logo">
           <span>MONOPOLY</span>
           <strong>DEAL</strong>
         </div>
 
-        <p className="start-subtitle">Online Card Game</p>
+        <p className="start-subtitle">{t(language, "onlineCardGame")}</p>
 
         <form onSubmit={handleStartGame}>
-          <label>
-            Number of players
-            <select value={playerCount} onChange={handlePlayerCountChange}>
-              <option value={2}>2 Players</option>
-              <option value={3}>3 Players</option>
-              <option value={4}>4 Players</option>
-            </select>
-          </label>
+          <fieldset className="setup-choice-group">
+            <legend>{t(language, "numberOfPlayers")}</legend>
+            <div className="setup-choice-grid">
+              {[2, 4].map((count) => (
+                <button
+                  type="button"
+                  className={
+                    playerCount === count
+                      ? "setup-choice-card selected-setup-choice"
+                      : "setup-choice-card"
+                  }
+                  key={count}
+                  onClick={() => setPlayerCount(count)}
+                >
+                  <strong>{count}</strong>
+                  <span>{t(language, "players")}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="setup-choice-group">
+            <legend>{t(language, "gameMode")}</legend>
+            <div className="setup-choice-grid">
+              <button
+                type="button"
+                className={
+                  playMode === "bots"
+                    ? "setup-choice-card selected-setup-choice"
+                    : "setup-choice-card"
+                }
+                onClick={() => setPlayMode("bots")}
+              >
+                {t(language, "playWithBots")}
+              </button>
+
+              <button
+                type="button"
+                className="setup-choice-card"
+                disabled
+              >
+                {t(language, "playOnlinePlayers")}
+              </button>
+            </div>
+          </fieldset>
 
           <div className="setup-names">
-            {Array.from({ length: playerCount }).map((_, index) => (
-              <label key={index}>
-                Player {index + 1} name
-                <input
-                  type="text"
-                  value={playerNames[index]}
-                  onChange={(event) =>
-                    handleNameChange(index, event.target.value)
-                  }
-                />
-              </label>
-            ))}
+            <label>
+              {t(language, "yourName")}
+              <input
+                type="text"
+                value={playerNames[0]}
+                onChange={(event) => handleNameChange(0, event.target.value)}
+                required
+              />
+            </label>
           </div>
 
-          <button type="submit" className="start-button">
-            Start Game
+          <button type="submit" className="start-button" disabled={!canStartGame}>
+            {t(language, "startGame")}
           </button>
         </form>
       </section>
