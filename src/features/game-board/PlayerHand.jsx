@@ -102,6 +102,7 @@ export function PlayerHand({
     const handRowRef = useFittedHandRow(player.hand.length);
     const [choiceAction, setChoiceAction] = useState(null);
     const [dragState, setDragState] = useState(null);
+    const dragStateRef = useRef(null);
     const canAct =
         canUseActions &&
         game.status === "playing" &&
@@ -662,8 +663,7 @@ export function PlayerHand({
 
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-        setDragState({
+        const nextDragState = {
             cardId: card.instanceId,
             startX: event.clientX,
             startY: event.clientY,
@@ -674,7 +674,10 @@ export function PlayerHand({
             x: 0,
             y: 0,
             active: false,
-        });
+        };
+
+        dragStateRef.current = nextDragState;
+        setDragState(nextDragState);
     }
 
     function handleCardPointerMove(card, event) {
@@ -685,21 +688,26 @@ export function PlayerHand({
             const x = event.clientX - current.startX;
             const y = event.clientY - current.startY;
 
-            return {
+            const nextDragState = {
                 ...current,
                 x,
                 y,
                 active: current.active || Math.abs(x) + Math.abs(y) > 8,
             };
+
+            dragStateRef.current = nextDragState;
+            return nextDragState;
         });
     }
 
     function handleCardRelease(card, event) {
         const clientX = event.clientX ?? event.changedTouches?.[0]?.clientX;
         const clientY = event.clientY ?? event.changedTouches?.[0]?.clientY;
+        const latestDragState = dragStateRef.current;
         const wasDragging =
-            dragState?.cardId === card.instanceId && dragState.active;
+            latestDragState?.cardId === card.instanceId && latestDragState.active;
 
+        dragStateRef.current = null;
         setDragState(null);
 
         if (typeof clientX !== "number" || typeof clientY !== "number") return;
@@ -738,7 +746,7 @@ export function PlayerHand({
             window.removeEventListener("pointerup", handleWindowPointerUp);
             window.removeEventListener("pointercancel", handleWindowPointerUp);
         };
-    }, [dragState, player.hand]);
+    }, [dragState?.cardId, player.hand]);
 
     if (hideCards) {
         return (
@@ -820,7 +828,7 @@ export function PlayerHand({
                             ]
                                 .filter(Boolean)
                                 .join(" ")}
-                            draggable={isCurrentPlayer && canAct}
+                            draggable={false}
                             key={card.instanceId}
                             style={
                                 dragState?.cardId === card.instanceId && dragState.active
@@ -837,7 +845,6 @@ export function PlayerHand({
                                     }
                                     : undefined
                             }
-                            onDragEnd={(event) => handleCardRelease(card, event)}
                             onPointerDown={(event) => handleCardPointerDown(card, event)}
                         >
                             <CardView card={card} language={language} />
