@@ -1531,6 +1531,57 @@ export function gameReducer(state, action) {
                 hand: updatedHand,
             };
 
+            if (!state.pendingAction.effect) {
+                const remainingPayments = state.pendingAction.payments.filter(
+                    (payment) => payment.fromPlayerId !== playerId
+                );
+                const remainingResponsePlayerIds =
+                    state.pendingAction.responsePlayerIds.filter((id) => id !== playerId);
+
+                if (remainingResponsePlayerIds.length > 0) {
+                    return {
+                        ...state,
+                        players: updatedPlayers,
+                        discardPile: [...state.discardPile, card],
+                        pendingAction: {
+                            ...state.pendingAction,
+                            payments: remainingPayments,
+                            responsePlayerIds: remainingResponsePlayerIds,
+                        },
+                        log: [
+                            ...state.log,
+                            {
+                                id: `log_${state.log.length + 1}`,
+                                message: `${player.name} played Just Say No. Their payment was blocked.`,
+                            },
+                        ],
+                    };
+                }
+
+                const nextPendingPayment = remainingPayments[0] || null;
+
+                return {
+                    ...state,
+                    status: nextPendingPayment ? "waiting_for_payment" : "playing",
+                    players: updatedPlayers,
+                    discardPile: [...state.discardPile, card],
+                    pendingAction: null,
+                    pendingPayment: nextPendingPayment,
+                    paymentQueue: remainingPayments.slice(1),
+                    turn: {
+                        ...state.turn,
+                        phase: nextPendingPayment ? "payment" : "action",
+                    },
+                    log: [
+                        ...state.log,
+                        {
+                            id: `log_${state.log.length + 1}`,
+                            message: `${player.name} played Just Say No. Their payment was blocked.`,
+                        },
+                    ],
+                };
+            }
+
             return {
                 ...state,
                 status: "playing",
