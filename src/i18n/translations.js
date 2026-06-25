@@ -13,6 +13,8 @@ export const translations = {
 
     winnerCongratulations: "Congratulations!",
     winnerWonGame: "won the game.",
+    youLost: "You Lost",
+    hardLuck: "Hard luck. Better luck next game.",
     country: "Country",
     whatsappPhone: "WhatsApp phone number",
     phonePlaceholder: "Phone number",
@@ -179,6 +181,8 @@ export const translations = {
 
     winnerCongratulations: "مبروك!",
     winnerWonGame: "ربح اللعبة.",
+    youLost: "لقد خسرت",
+    hardLuck: "حظ أوفر في اللعبة القادمة.",
     country: "الدولة",
     whatsappPhone: "رقم الواتساب",
     phonePlaceholder: "رقم الهاتف",

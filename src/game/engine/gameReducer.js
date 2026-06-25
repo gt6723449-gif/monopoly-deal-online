@@ -144,7 +144,13 @@ function getRandomItem(items) {
 
 function getPlayableRentColor(player, card) {
     const colors = card.meta.colors || [];
-    return colors.find((color) => calculateRentForGroup(player, color) > 0);
+    return colors
+        .map((color) => ({
+            color,
+            rent: calculateRentForGroup(player, color),
+        }))
+        .filter((item) => item.rent > 0)
+        .sort((a, b) => b.rent - a.rent)[0]?.color;
 }
 
 function getBotActionForCard(state, player, card) {

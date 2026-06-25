@@ -47,6 +47,9 @@ export default function App() {
 
 
   const winner = game.players.find((player) => player.id === game.winnerId);
+  const humanPlayer =
+    game.players.find((player) => player.id === game.humanPlayerId) ||
+    game.players[0];
 
   if (winner) {
     return (
@@ -54,6 +57,7 @@ export default function App() {
         winner={winner}
         amount={PRIZE_AMOUNT}
         language={language}
+        isHumanWinner={winner.id === humanPlayer.id}
         onPlayAgain={() => {
           dispatch({
             type: "START_NEW_GAME",
@@ -74,9 +78,6 @@ export default function App() {
     game.status === "playing" &&
     game.turn.phase === "action" &&
     game.turn.actionsUsed < game.turn.maxActions;
-  const humanPlayer =
-    game.players.find((player) => player.id === game.humanPlayerId) ||
-    game.players[0];
   const humanBankTotal = humanPlayer.bank.reduce(
     (sum, card) => sum + card.value,
     0

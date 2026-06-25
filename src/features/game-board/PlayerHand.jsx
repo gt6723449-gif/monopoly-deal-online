@@ -122,6 +122,23 @@ export function PlayerHand({
         }));
     }
 
+    function openChoiceAction(action) {
+        setSelectedTargets((current) => {
+            const nextTargets = { ...current };
+            delete nextTargets[action.card.instanceId];
+            delete nextTargets[`${action.card.instanceId}_modal_offered`];
+
+            Object.keys(nextTargets).forEach((key) => {
+                if (key.startsWith(`${action.card.instanceId}_double_`)) {
+                    delete nextTargets[key];
+                }
+            });
+
+            return nextTargets;
+        });
+        setChoiceAction(action);
+    }
+
     useEffect(() => {
         if (!choiceAction) return undefined;
 
@@ -537,7 +554,7 @@ export function PlayerHand({
             }
 
             if (isMultiColorProperty) {
-                setChoiceAction({
+                openChoiceAction({
                     type: "property",
                     card,
                     availableColors: propertyColors,
@@ -565,7 +582,7 @@ export function PlayerHand({
         if (card.type === "rent") {
             const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
 
-            setChoiceAction({
+            openChoiceAction({
                 type: "rent",
                 card,
                 targetablePlayers,
@@ -594,7 +611,7 @@ export function PlayerHand({
                 return;
             }
 
-            setChoiceAction({
+            openChoiceAction({
                 type: "debtCollector",
                 card,
                 targetablePlayers,
@@ -606,7 +623,7 @@ export function PlayerHand({
         if (card.meta.actionType === "slyDeal") {
             const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
 
-            setChoiceAction({
+            openChoiceAction({
                 type: "slyDeal",
                 card,
                 initialTargetId: onlyTarget?.id,
@@ -618,7 +635,7 @@ export function PlayerHand({
         if (card.meta.actionType === "dealBreaker") {
             const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
 
-            setChoiceAction({
+            openChoiceAction({
                 type: "dealBreaker",
                 card,
                 initialTargetId: onlyTarget?.id,
@@ -630,7 +647,7 @@ export function PlayerHand({
         if (card.meta.actionType === "forcedDeal") {
             const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
 
-            setChoiceAction({
+            openChoiceAction({
                 type: "forcedDeal",
                 card,
                 initialTargetId: onlyTarget?.id,
@@ -979,7 +996,10 @@ export function PlayerHand({
                                                 )
                                             }
                                         >
-                                            <strong>{t(language, `cardName.${item.card.id}`)}</strong>
+                                            <strong>
+                                                {t(language, "steal")}{" "}
+                                                {t(language, `cardName.${item.card.id}`)}
+                                            </strong>
                                         </button>
                                     ))}
                             </div>
@@ -1007,8 +1027,9 @@ export function PlayerHand({
                                                 playDealBreaker(choiceAction.card, item)
                                             }
                                         >
-                                            <strong>{formatColorName(item.group)}</strong>
-                                            <span>{t(language, "steal")}</span>
+                                            <strong>
+                                                {t(language, "steal")} {formatColorName(item.group)}
+                                            </strong>
                                         </button>
                                     ))}
                             </div>
@@ -1046,8 +1067,10 @@ export function PlayerHand({
                                                     )
                                                 }
                                             >
-                                                <strong>{t(language, `cardName.${item.card.id}`)}</strong>
-                                                <span>{t(language, "give")}</span>
+                                                <strong>
+                                                    {t(language, "give")}{" "}
+                                                    {t(language, `cardName.${item.card.id}`)}
+                                                </strong>
                                             </button>
                                         );
                                     })}
@@ -1087,8 +1110,10 @@ export function PlayerHand({
                                                             )
                                                         }
                                                     >
-                                                        <strong>{t(language, `cardName.${item.card.id}`)}</strong>
-                                                        <span>{t(language, "take")}</span>
+                                                        <strong>
+                                                            {t(language, "take")}{" "}
+                                                            {t(language, `cardName.${item.card.id}`)}
+                                                        </strong>
                                                     </button>
                                                 )
                                             )}

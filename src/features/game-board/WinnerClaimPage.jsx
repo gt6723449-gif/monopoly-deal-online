@@ -13,7 +13,13 @@ const COUNTRIES = [
   { iso: "TR", name: "Turkey", arName: "تركيا", code: "+90" },
 ];
 
-export function WinnerClaimPage({ winner, amount, language, onPlayAgain }) {
+export function WinnerClaimPage({
+  winner,
+  amount,
+  language,
+  onPlayAgain,
+  isHumanWinner = true,
+}) {
   const [selectedCountryIso, setSelectedCountryIso] = useState("LB");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState(false);
@@ -77,15 +83,24 @@ export function WinnerClaimPage({ winner, amount, language, onPlayAgain }) {
   return (
     <main className="winner-claim-page" dir={language === "ar" ? "rtl" : "ltr"}>
       <section className="winner-claim-card">
-        <h1>{t(language, "winnerCongratulations")}</h1>
+        <h1>
+          {isHumanWinner
+            ? t(language, "winnerCongratulations")
+            : t(language, "youLost")}
+        </h1>
 
-        <p>
-          <strong>{winner.name}</strong> {t(language, "winnerWonGame")}
-        </p>
+        {isHumanWinner ? (
+          <p>
+            <strong>{winner.name}</strong> {t(language, "winnerWonGame")}
+          </p>
+        ) : (
+          <p>{t(language, "hardLuck")}</p>
+        )}
 
-        <div className="claim-amount">{amount}</div>
+        {isHumanWinner && <div className="claim-amount">{amount}</div>}
 
-        <form onSubmit={handleCollectGift}>
+        {isHumanWinner ? (
+          <form onSubmit={handleCollectGift}>
           <label>
             {t(language, "country")}
             <select
@@ -128,7 +143,12 @@ export function WinnerClaimPage({ winner, amount, language, onPlayAgain }) {
           <button type="button" onClick={onPlayAgain}>
             {t(language, "playAgain")}
           </button>
-        </form>
+          </form>
+        ) : (
+          <button type="button" onClick={onPlayAgain}>
+            {t(language, "playAgain")}
+          </button>
+        )}
       </section>
     </main>
   );
