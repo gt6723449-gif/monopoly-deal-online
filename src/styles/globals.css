@@ -975,7 +975,6 @@ select {
     position: relative;
     cursor: grab;
     touch-action: none;
-    animation: card-arrive 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .draggable-card-shell:active {
@@ -1218,16 +1217,16 @@ select {
 }
 
 .deal-rent-table {
-    width: 60%;
+    width: 76%;
     justify-self: center;
     display: grid;
-    gap: 0;
-    padding: 5px 6px;
+    gap: 2px;
+    padding: 7px 8px;
     background: transparent;
     border: 1px solid var(--ink);
     border-radius: 8px;
-    font-size: 0.66rem;
-    line-height: 0.88;
+    font-size: 0.68rem;
+    line-height: 1.05;
     overflow: hidden;
     grid-row: 3 / span 2;
     align-self: start;
@@ -1238,8 +1237,8 @@ select {
 .deal-rent-table strong {
     text-align: center;
     text-transform: uppercase;
-    line-height: 0.9;
-    margin-bottom: 5px;
+    line-height: 1;
+    margin-bottom: 6px;
 }
 
 .deal-rent-table div {
@@ -1247,8 +1246,8 @@ select {
     justify-self: center;
     display: flex;
     justify-content: space-between;
-    gap: 2px;
-    line-height: 0.88;
+    gap: 5px;
+    line-height: 1.05;
 }
 
 .deal-action-icon {
@@ -1792,22 +1791,23 @@ select {
     }
 
     .deal-rent-table {
-        width: 60%;
-        font-size: 0.51rem;
-        line-height: 0.84;
-        padding: 3px 4px;
+        width: 76%;
+        font-size: 0.52rem;
+        line-height: 1;
+        padding: 4px 5px;
         border-radius: 6px;
         margin-top: 2px;
     }
 
     .deal-rent-table strong {
-        margin-bottom: 4px;
+        margin-bottom: 5px;
     }
 
     .deal-rent-table div {
         width: 100%;
         justify-self: center;
-        line-height: 0.84;
+        gap: 4px;
+        line-height: 1;
     }
 
     .deal-money-center span,

@@ -355,7 +355,7 @@ export function PlayerHand({
     }
 
     function getChoiceTargetId(action = choiceAction) {
-        return selectedTargets[action.card.instanceId];
+        return selectedTargets[action.card.instanceId] || action.initialTargetId;
     }
 
     function isWaitingForPlayerTarget(action = choiceAction) {
@@ -563,11 +563,14 @@ export function PlayerHand({
         }
 
         if (card.type === "rent") {
+            const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
+
             setChoiceAction({
                 type: "rent",
                 card,
                 targetablePlayers,
                 requiresTargetSelection,
+                initialTargetId: onlyTarget?.id,
                 playableRentColors: getPlayableRentColors(currentPlayer, card),
             });
             return;
@@ -584,6 +587,13 @@ export function PlayerHand({
         }
 
         if (card.meta.actionType === "debtCollector") {
+            const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
+
+            if (onlyTarget) {
+                playDebtCollector(card, onlyTarget.id);
+                return;
+            }
+
             setChoiceAction({
                 type: "debtCollector",
                 card,
@@ -594,27 +604,36 @@ export function PlayerHand({
         }
 
         if (card.meta.actionType === "slyDeal") {
+            const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
+
             setChoiceAction({
                 type: "slyDeal",
                 card,
+                initialTargetId: onlyTarget?.id,
                 stealableProperties: getStealableProperties(game, currentPlayer),
             });
             return;
         }
 
         if (card.meta.actionType === "dealBreaker") {
+            const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
+
             setChoiceAction({
                 type: "dealBreaker",
                 card,
+                initialTargetId: onlyTarget?.id,
                 stealableFullSets: getStealableFullSets(game, currentPlayer),
             });
             return;
         }
 
         if (card.meta.actionType === "forcedDeal") {
+            const onlyTarget = targetablePlayers.length === 1 ? targetablePlayers[0] : null;
+
             setChoiceAction({
                 type: "forcedDeal",
                 card,
+                initialTargetId: onlyTarget?.id,
                 ownProperties: getCurrentPlayerProperties(currentPlayer),
                 forcedDealTargets: getStealableProperties(game, currentPlayer),
             });
@@ -642,6 +661,7 @@ export function PlayerHand({
     }
 
     function handleCardPointerMove(card, event) {
+        event.preventDefault();
         setDragState((current) => {
             if (!current || current.cardId !== card.instanceId) return current;
 
@@ -672,6 +692,36 @@ export function PlayerHand({
             playCardFromDrop(card, getDropZoneFromPoint(clientX, clientY));
         });
     }
+
+    useEffect(() => {
+        if (!dragState) return undefined;
+
+        const draggingCard = player.hand.find(
+            (card) => card.instanceId === dragState.cardId
+        );
+
+        function handleWindowPointerMove(event) {
+            if (!draggingCard) return;
+            handleCardPointerMove(draggingCard, event);
+        }
+
+        function handleWindowPointerUp(event) {
+            if (!draggingCard) return;
+            handleCardRelease(draggingCard, event);
+        }
+
+        window.addEventListener("pointermove", handleWindowPointerMove, {
+            passive: false,
+        });
+        window.addEventListener("pointerup", handleWindowPointerUp);
+        window.addEventListener("pointercancel", handleWindowPointerUp);
+
+        return () => {
+            window.removeEventListener("pointermove", handleWindowPointerMove);
+            window.removeEventListener("pointerup", handleWindowPointerUp);
+            window.removeEventListener("pointercancel", handleWindowPointerUp);
+        };
+    }, [dragState, player.hand]);
 
     if (hideCards) {
         return (
@@ -756,7 +806,7 @@ export function PlayerHand({
                             draggable={isCurrentPlayer && canAct}
                             key={card.instanceId}
                             style={
-                                dragState?.cardId === card.instanceId
+                                dragState?.cardId === card.instanceId && dragState.active
                                     ? {
                                         position: "fixed",
                                         left: `${dragState.left}px`,
@@ -772,9 +822,6 @@ export function PlayerHand({
                             }
                             onDragEnd={(event) => handleCardRelease(card, event)}
                             onPointerDown={(event) => handleCardPointerDown(card, event)}
-                            onPointerMove={(event) => handleCardPointerMove(card, event)}
-                            onPointerUp={(event) => handleCardRelease(card, event)}
-                            onPointerCancel={() => setDragState(null)}
                         >
                             <CardView card={card} language={language} />
                         </div>
@@ -819,13 +866,13 @@ export function PlayerHand({
 
                         {choiceAction.type === "debtCollector" && (
                             <div className="action-choice-form">
-                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                {!getChoiceTargetId(choiceAction) && (
                                     <p className="choice-hint">
                                         {t(language, "target")}: {t(language, "playAction")}
                                     </p>
                                 )}
 
-                                {selectedTargets[choiceAction.card.instanceId] && (
+                                {getChoiceTargetId(choiceAction) && (
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -863,7 +910,7 @@ export function PlayerHand({
                                                 onClick={() =>
                                                     playRentCard(
                                                         choiceAction.card,
-                                                        selectedTargets[choiceAction.card.instanceId],
+                                                        getChoiceTargetId(choiceAction),
                                                         color
                                                     )
                                                 }
@@ -907,13 +954,13 @@ export function PlayerHand({
 
                         {choiceAction.type === "slyDeal" && (
                             <div className="action-choice-list">
-                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                {!getChoiceTargetId(choiceAction) && (
                                     <p className="choice-hint">
                                         {t(language, "target")}: {t(language, "playSlyDeal")}
                                     </p>
                                 )}
 
-                                {selectedTargets[choiceAction.card.instanceId] &&
+                                {getChoiceTargetId(choiceAction) &&
                                     getTargetedStealableProperties(choiceAction).map((item) => (
                                         <button
                                             type="button"
@@ -932,8 +979,7 @@ export function PlayerHand({
                                                 )
                                             }
                                         >
-                                            <strong>{item.card.name}</strong>
-                                            <span>{item.playerName}</span>
+                                            <strong>{t(language, `cardName.${item.card.id}`)}</strong>
                                         </button>
                                     ))}
                             </div>
@@ -941,13 +987,13 @@ export function PlayerHand({
 
                         {choiceAction.type === "dealBreaker" && (
                             <div className="action-choice-list">
-                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                {!getChoiceTargetId(choiceAction) && (
                                     <p className="choice-hint">
                                         {t(language, "target")}: {t(language, "playDealBreaker")}
                                     </p>
                                 )}
 
-                                {selectedTargets[choiceAction.card.instanceId] &&
+                                {getChoiceTargetId(choiceAction) &&
                                     getTargetedFullSets(choiceAction).map((item) => (
                                         <button
                                             type="button"
@@ -961,7 +1007,7 @@ export function PlayerHand({
                                                 playDealBreaker(choiceAction.card, item)
                                             }
                                         >
-                                            <strong>{item.label}</strong>
+                                            <strong>{formatColorName(item.group)}</strong>
                                             <span>{t(language, "steal")}</span>
                                         </button>
                                     ))}
@@ -1000,20 +1046,20 @@ export function PlayerHand({
                                                     )
                                                 }
                                             >
-                                                <strong>{item.card.name}</strong>
+                                                <strong>{t(language, `cardName.${item.card.id}`)}</strong>
                                                 <span>{t(language, "give")}</span>
                                             </button>
                                         );
                                     })}
                                 </div>
 
-                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                {!getChoiceTargetId(choiceAction) && (
                                     <p className="choice-hint">
                                         {t(language, "target")}: {t(language, "playForcedDeal")}
                                     </p>
                                 )}
 
-                                {selectedTargets[choiceAction.card.instanceId] && (
+                                {getChoiceTargetId(choiceAction) && (
                                     <>
                                         <strong>{t(language, "take")}</strong>
                                         <div className="action-choice-list">
@@ -1041,8 +1087,8 @@ export function PlayerHand({
                                                             )
                                                         }
                                                     >
-                                                        <strong>{item.card.name}</strong>
-                                                        <span>{item.playerName}</span>
+                                                        <strong>{t(language, `cardName.${item.card.id}`)}</strong>
+                                                        <span>{t(language, "take")}</span>
                                                     </button>
                                                 )
                                             )}

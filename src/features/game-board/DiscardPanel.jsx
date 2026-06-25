@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { t } from "../../i18n/translations";
 
-const DISCARD_SECONDS = 30;
+const DISCARD_SECONDS = 10;
 
 function getTranslatedCardName(card, language) {
     return t(language, `cardName.${card.id}`);
@@ -17,6 +17,7 @@ function getTranslatedCardType(card, language) {
 }
 
 export function DiscardPanel({ game, currentPlayer, dispatch, language }) {
+    const [timeLeft, setTimeLeft] = useState(DISCARD_SECONDS);
     const isHumanDiscard =
         game.status === "discarding" &&
         currentPlayer.id === game.humanPlayerId;
@@ -24,27 +25,37 @@ export function DiscardPanel({ game, currentPlayer, dispatch, language }) {
     useEffect(() => {
         if (!isHumanDiscard) return undefined;
 
-        const timeoutId = window.setTimeout(() => {
-            currentPlayer.hand.slice(7).forEach((card) => {
-                dispatch({
-                    type: "DISCARD_CARD",
-                    payload: {
-                        playerId: currentPlayer.id,
-                        cardInstanceId: card.instanceId,
-                    },
-                });
-            });
+        setTimeLeft(DISCARD_SECONDS);
+        const intervalId = window.setInterval(() => {
+            setTimeLeft((current) => Math.max(0, current - 1));
+        }, 1000);
 
+        return () => window.clearInterval(intervalId);
+    }, [isHumanDiscard]);
+
+    useEffect(() => {
+        if (!isHumanDiscard) return undefined;
+        if (timeLeft > 0) return undefined;
+
+        currentPlayer.hand.slice(7).forEach((card) => {
             dispatch({
-                type: "FINISH_DISCARDING",
+                type: "DISCARD_CARD",
                 payload: {
                     playerId: currentPlayer.id,
+                    cardInstanceId: card.instanceId,
                 },
             });
-        }, DISCARD_SECONDS * 1000);
+        });
 
-        return () => window.clearTimeout(timeoutId);
-    }, [isHumanDiscard, currentPlayer.id, currentPlayer.hand, dispatch]);
+        dispatch({
+            type: "FINISH_DISCARDING",
+            payload: {
+                playerId: currentPlayer.id,
+            },
+        });
+
+        return undefined;
+    }, [isHumanDiscard, timeLeft, currentPlayer.id, currentPlayer.hand, dispatch]);
 
     if (game.status !== "discarding") {
         return null;
@@ -87,6 +98,9 @@ export function DiscardPanel({ game, currentPlayer, dispatch, language }) {
                 <h2 id="discard-panel-title">{t(language, "discardDownTo7")}</h2>
 
                 <div className="payment-totals">
+                    <span>
+                        {timeLeft}s
+                    </span>
                     <span>
                         <strong>{currentPlayer.name}</strong> {t(language, "has")}{" "}
                         {currentPlayer.hand.length} {t(language, "cardPlural")}
