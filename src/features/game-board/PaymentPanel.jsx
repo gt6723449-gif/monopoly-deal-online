@@ -24,6 +24,24 @@ function getPaymentCardStyle(card) {
     };
 }
 
+function getTranslatedCardName(card, language) {
+    if (card.paymentSource === "bank") return t(language, "bank");
+
+    return t(language, `cardName.${card.id}`);
+}
+
+function getPaymentReason(game, pendingPayment, language) {
+    const sourceCard = game.discardPile.find(
+        (card) => card.instanceId === pendingPayment.sourceCardInstanceId
+    );
+
+    if (sourceCard) {
+        return t(language, `cardName.${sourceCard.id}`);
+    }
+
+    return pendingPayment.reason || "";
+}
+
 export function PaymentPanel({ game, dispatch, language }) {
     const [selectedCardIds, setSelectedCardIds] = useState([]);
 
@@ -79,6 +97,7 @@ export function PaymentPanel({ game, dispatch, language }) {
         pendingPayment.amount,
         totalPayableAssets
     );
+    const paymentReason = getPaymentReason(game, pendingPayment, language);
 
     function toggleCard(cardInstanceId) {
         setSelectedCardIds((current) => {
@@ -116,8 +135,8 @@ export function PaymentPanel({ game, dispatch, language }) {
                 aria-labelledby="payment-panel-title"
             >
                 <h2 id="payment-panel-title">
-                    {t(language, "paymentRequired")}: {receiver.name} Played{" "}
-                    {pendingPayment.reason || ""}
+                    {t(language, "paymentRequired")}: {receiver.name}{" "}
+                    {t(language, "played")} {paymentReason}
                 </h2>
 
                 <div className="payment-totals">
@@ -148,7 +167,7 @@ export function PaymentPanel({ game, dispatch, language }) {
                                 onClick={() => toggleCard(card.instanceId)}
                             >
                                 <strong>
-                                    {card.paymentSource === "bank" ? t(language, "bank") : card.name}
+                                    {getTranslatedCardName(card, language)}
                                 </strong>
                                 <span>${card.value}M</span>
                             </button>

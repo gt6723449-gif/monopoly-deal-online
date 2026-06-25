@@ -624,11 +624,17 @@ export function PlayerHand({
     function handleCardPointerDown(card, event) {
         if (!canAct || player.id !== currentPlayer.id) return;
 
+        event.preventDefault();
+        const rect = event.currentTarget.getBoundingClientRect();
         event.currentTarget.setPointerCapture?.(event.pointerId);
         setDragState({
             cardId: card.instanceId,
             startX: event.clientX,
             startY: event.clientY,
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
             x: 0,
             y: 0,
             active: false,
@@ -752,6 +758,13 @@ export function PlayerHand({
                             style={
                                 dragState?.cardId === card.instanceId
                                     ? {
+                                        position: "fixed",
+                                        left: `${dragState.left}px`,
+                                        top: `${dragState.top}px`,
+                                        width: `${dragState.width}px`,
+                                        height: `${dragState.height}px`,
+                                        marginLeft: 0,
+                                        zIndex: 300,
                                         "--drag-x": `${dragState.x}px`,
                                         "--drag-y": `${dragState.y}px`,
                                     }
@@ -1044,7 +1057,7 @@ export function PlayerHand({
                             className="action-choice-cancel"
                             onClick={() => setChoiceAction(null)}
                         >
-                            Cancel
+                            {t(language, "cancel")}
                         </button>
                     </section>
                 </div>

@@ -21,6 +21,9 @@ export const translations = {
     saving: "Saving...",
     collectGift: "Collect Gift",
     playAgain: "Play Again",
+    played: "played",
+    onYou: "on you",
+    youHave: "You have",
 
     sets: "Sets",
     endTurnShort: "End Turn",
@@ -35,6 +38,8 @@ export const translations = {
     from: "from",
     use: "Use",
     addTo: "Add to",
+    close: "Close",
+    cancel: "Cancel",
 
     playProperty: "Play Property",
     playRent: "Play Rent",
@@ -182,6 +187,9 @@ export const translations = {
     saving: "جاري الحفظ...",
     collectGift: "احصل على هديتك",
     playAgain: "العب مرة أخرى",
+    played: "لعب",
+    onYou: "عليك",
+    youHave: "لديك",
 
     sets: "المجموعات",
     endTurnShort: "\u0625\u0646\u0647\u0627\u0621 \u0627\u0644\u062f\u0648\u0631",
@@ -196,6 +204,8 @@ export const translations = {
     from: "من",
     use: "استخدم",
     addTo: "أضف إلى",
+    close: "إغلاق",
+    cancel: "إلغاء",
 
     playProperty: "العب العقار",
     playRent: "العب الإيجار",

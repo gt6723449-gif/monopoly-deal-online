@@ -1457,7 +1457,7 @@ select {
 .discard-modal,
 .action-choice-modal {
     width: min(94vw, 440px);
-    max-height: min(82svh, 560px);
+    max-height: min(88svh, 560px);
     gap: 6px;
     padding: 10px;
     margin: 0;
@@ -1467,6 +1467,16 @@ select {
 
 .discard-modal {
     width: min(94vw, 520px);
+}
+
+.payment-modal .notice,
+.discard-modal .notice {
+    position: static;
+    z-index: auto;
+    width: 100%;
+    transform: none;
+    margin: 0;
+    text-align: center;
 }
 
 .payment-modal h2,
@@ -1622,6 +1632,8 @@ select {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
     gap: 5px;
+    max-height: min(44svh, 300px);
+    overflow: auto;
 }
 
 .payment-card {

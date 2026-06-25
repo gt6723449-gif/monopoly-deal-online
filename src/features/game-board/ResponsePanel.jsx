@@ -70,12 +70,15 @@ export function ResponsePanel({ game, dispatch, language }) {
                 aria-labelledby="response-panel-title"
             >
                 <h2 id="response-panel-title">
-                    {(actionPlayer?.name || "Player")} played {pendingAction.sourceCard.name} on you
+                    {(actionPlayer?.name || t(language, "playerName"))}{" "}
+                    {t(language, "played")}{" "}
+                    {t(language, `cardName.${pendingAction.sourceCard.id}`)}{" "}
+                    {t(language, "onYou")}
                 </h2>
 
                 {justSayNoCard ? (
                     <>
-                        <p className="response-have-card">You have:</p>
+                        <p className="response-have-card">{t(language, "youHave")}:</p>
                         <div className="response-just-say-no-card">
                             <CardView card={justSayNoCard} language={language} />
                         </div>

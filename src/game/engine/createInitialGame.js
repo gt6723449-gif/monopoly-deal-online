@@ -3,14 +3,10 @@ import { createDeck, drawCards } from "./deckEngine";
 export function createInitialGame({ playerNames, botPlayerIds = [], mode = "local" }) {
   let deck = createDeck();
 
-  const players = playerNames.map((name, index) => {
-    const result = drawCards(deck, 5);
-    deck = result.remainingDeck;
-
-    return {
+  const players = playerNames.map((name, index) => ({
       id: `player_${index + 1}`,
       name,
-      hand: result.drawnCards,
+      hand: [],
       bank: [],
       properties: {
         brown: [],
@@ -28,8 +24,15 @@ export function createInitialGame({ playerNames, botPlayerIds = [], mode = "loca
       propertySetModifiers: {},
       isConnected: true,
       isBot: botPlayerIds.includes(`player_${index + 1}`),
-    };
-  });
+  }));
+
+  for (let cardIndex = 0; cardIndex < 5; cardIndex += 1) {
+    players.forEach((player) => {
+      const result = drawCards(deck, 1);
+      deck = result.remainingDeck;
+      player.hand.push(...result.drawnCards);
+    });
+  }
 
   return {
     id: "local_game_1",

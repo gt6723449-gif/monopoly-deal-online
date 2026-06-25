@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CardView } from "../../components/CardView/CardView";
 import { PROPERTY_SETS } from "../../game/data/propertySets";
+import { t } from "../../i18n/translations";
 
 const PROPERTY_GROUPS = Object.keys(PROPERTY_SETS);
 
@@ -168,7 +169,7 @@ export function PlayerProperties({
           >
             <CardView card={previewCard} language={language} />
             <button type="button" onClick={() => setPreviewCard(null)}>
-              Close
+              {t(language, "close")}
             </button>
           </div>
         </div>
@@ -186,7 +187,7 @@ export function PlayerProperties({
             aria-modal="true"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2>{colorChoiceCard.name}</h2>
+            <h2>{t(language, `cardName.${colorChoiceCard.id}`)}</h2>
             <CardView card={colorChoiceCard} language={language} />
             <div className="property-color-choice-grid">
               {(colorChoiceCard.meta?.colors || []).map((color) => (
@@ -208,7 +209,7 @@ export function PlayerProperties({
               className="action-choice-cancel"
               onClick={() => setColorChoiceCard(null)}
             >
-              Cancel
+              {t(language, "cancel")}
             </button>
           </section>
         </div>
