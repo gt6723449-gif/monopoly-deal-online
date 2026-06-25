@@ -902,7 +902,7 @@ export function PlayerHand({
                                         onClick={() =>
                                             playDebtCollector(
                                                 choiceAction.card,
-                                                selectedTargets[choiceAction.card.instanceId]
+                                                getChoiceTargetId(choiceAction)
                                             )
                                         }
                                     >
@@ -914,13 +914,13 @@ export function PlayerHand({
 
                         {choiceAction.type === "rent" && (
                             <div className="action-choice-form">
-                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                {!getChoiceTargetId(choiceAction) && (
                                     <p className="choice-hint">
                                         {t(language, "target")}: {t(language, "playRent")}
                                     </p>
                                 )}
 
-                                {selectedTargets[choiceAction.card.instanceId] && (
+                                {getChoiceTargetId(choiceAction) && (
                                     <div className="property-color-choice-grid">
                                         {choiceAction.playableRentColors.map((color) => (
                                             <button
