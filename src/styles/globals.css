@@ -11,9 +11,9 @@
     --ink: #111827;
     --gold: #facc15;
 
-    --card-width: 144px;
-    --card-height: 230px;
-    --card-overlap: 34px;
+    --card-width: 132px;
+    --card-height: 188px;
+    --card-overlap: 42px;
 }
 
 html,
@@ -22,7 +22,7 @@ body {
     width: 100%;
     overflow-x: hidden;
     font-family: system-ui, sans-serif;
-    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    background: #171515;
     color: var(--ink);
 }
 
@@ -67,6 +67,9 @@ select {
     display: grid;
     place-items: center;
     padding: 18px;
+    background:
+        radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, #201d1e, #332d2f 48%, #181617);
 }
 
 .start-card {
@@ -74,10 +77,11 @@ select {
     display: grid;
     gap: 18px;
     padding: clamp(18px, 3vw, 34px);
-    background: var(--cream);
-    border: 5px solid var(--ink);
-    border-radius: 24px;
-    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+    background: rgba(18, 17, 18, 0.96);
+    color: #f8fafc;
+    border: 2px solid rgba(248, 250, 252, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 18px 0 rgba(0, 0, 0, 0.38);
     text-align: center;
     overflow: hidden;
 }
@@ -90,10 +94,15 @@ select {
 
 .game-logo span {
     padding: 10px 18px;
-    background: var(--red);
+    background:
+        repeating-linear-gradient(45deg,
+            #d71920,
+            #d71920 9px,
+            #b51218 9px,
+            #b51218 18px);
     color: white;
     border: 5px solid white;
-    outline: 4px solid var(--ink);
+    outline: 3px solid #050505;
     border-radius: 12px;
     font-size: clamp(2rem, 7vw, 4.8rem);
     font-weight: 1000;
@@ -102,9 +111,9 @@ select {
 
 .game-logo strong {
     padding: 8px 24px;
-    background: var(--ink);
-    color: var(--gold);
-    border: 4px solid var(--gold);
+    background: #07551f;
+    color: white;
+    border: 3px solid #22c55e;
     border-radius: 999px;
     font-size: clamp(2.4rem, 8vw, 5.2rem);
     font-weight: 1000;
@@ -114,6 +123,7 @@ select {
 
 .start-subtitle {
     margin: 0;
+    color: #d1d5db;
     font-size: clamp(0.8rem, 1.8vw, 1.05rem);
     font-weight: 1000;
     letter-spacing: 0.08em;
@@ -162,9 +172,10 @@ select {
     place-items: center;
     gap: 2px;
     padding: 10px;
-    background: white;
-    color: var(--ink);
-    border: 3px solid var(--ink);
+    background: #050505;
+    color: #f8fafc;
+    border: 2px solid rgba(248, 250, 252, 0.18);
+    border-radius: 8px;
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
 }
 
@@ -178,14 +189,49 @@ select {
 }
 
 .selected-setup-choice {
-    background: var(--red);
+    background: #07551f;
     color: white;
+    border-color: #22c55e;
     outline: 0;
+    box-shadow:
+        0 4px 0 rgba(0, 0, 0, 0.22),
+        0 0 0 2px rgba(34, 197, 94, 0.28);
 }
 
 .setup-choice-card:disabled {
-    background: #e5e7eb;
-    color: #6b7280;
+    background: #1f2937;
+    color: #94a3b8;
+    opacity: 0.75;
+}
+
+.start-card input,
+.winner-claim-card input,
+.winner-claim-card select {
+    background: #050505;
+    color: #f8fafc;
+    border: 2px solid rgba(248, 250, 252, 0.18);
+}
+
+.start-card input:focus,
+.winner-claim-card input:focus,
+.winner-claim-card select:focus {
+    outline: 3px solid rgba(34, 197, 94, 0.45);
+    border-color: #22c55e;
+}
+
+.start-card .start-button,
+.winner-claim-card button {
+    background: #07551f;
+    color: white;
+    border: 2px solid #22c55e;
+    border-radius: 8px;
+}
+
+.start-card .start-button:disabled,
+.winner-claim-card button:disabled {
+    background: #1f2937;
+    color: #94a3b8;
+    border-color: rgba(248, 250, 252, 0.14);
     opacity: 0.75;
 }
 
@@ -196,31 +242,264 @@ select {
     width: 100%;
     display: grid;
     place-items: start center;
-    padding: 8px;
+    padding: 0;
     overflow-x: hidden;
 }
 
 .game-shell {
+    position: relative;
     width: min(100%, 860px);
+    min-height: 100svh;
     margin: 0 auto;
+    display: grid;
+    grid-template-rows: 64px 1fr 60px;
     overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, #201d1e, #332d2f 48%, #181617);
+}
+
+.game-top-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    padding: 0 18px;
+    background: #121112;
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-top-bar button {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    background: transparent;
+    color: #e5e7eb;
+    font-size: 0;
+    border-radius: 0;
+}
+
+.top-icon::before,
+.top-icon::after {
+    content: "";
+    display: block;
+}
+
+.top-icon-menu::before {
+    width: 22px;
+    height: 16px;
+    border-top: 4px solid currentColor;
+    border-bottom: 4px solid currentColor;
+}
+
+.top-icon-menu::after {
+    position: absolute;
+    width: 22px;
+    height: 4px;
+    background: currentColor;
+}
+
+.top-icon-bank::before {
+    width: 22px;
+    height: 16px;
+    border: 3px solid currentColor;
+    border-radius: 3px;
+    transform: rotate(-8deg);
+}
+
+.top-icon-bank::after {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+}
+
+.top-icon-invite::before {
+    width: 18px;
+    height: 18px;
+    border-radius: 50% 50% 42% 42%;
+    background: currentColor;
+}
+
+.top-icon-invite::after {
+    position: absolute;
+    right: 2px;
+    bottom: 5px;
+    content: "+";
+    color: currentColor;
+    font-size: 1.15rem;
+    font-weight: 1000;
+    line-height: 1;
+}
+
+.top-icon-chat::before {
+    width: 22px;
+    height: 17px;
+    border-radius: 50% 50% 50% 12px;
+    background: currentColor;
+}
+
+.game-top-bar strong {
+    text-align: center;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+}
+
+.game-bottom-bar {
+    display: grid;
+    grid-template-columns: minmax(48px, 0.62fr) auto minmax(86px, 1.2fr) minmax(62px, 0.74fr);
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #070707;
+    color: white;
+}
+
+.bottom-player-card {
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0;
+}
+
+.bottom-player-timer {
+    position: relative;
+    width: 46px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 5px;
+    border-radius: 50%;
+    background: #07551f;
+    border: 2px solid #e5e7eb;
+    overflow: hidden;
+}
+
+.bottom-player-card-active .bottom-player-timer {
+    width: 56px;
+    box-shadow:
+        0 0 0 3px rgba(74, 222, 128, 0.98),
+        0 0 20px rgba(34, 197, 94, 0.92);
+    animation: timer-glow 900ms ease-in-out infinite alternate;
+}
+
+.bottom-player-timer .turn-timer-ring {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: conic-gradient(#07551f var(--timer-progress), #050505 0deg);
+}
+
+.bottom-player-timer .turn-timer-ring::after {
+    display: none;
+}
+
+.bottom-player-timer span {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    color: white;
+    font-size: 0.46rem;
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.bottom-sets-count {
+    color: white;
+    font-size: 0.58rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+@keyframes timer-glow {
+    from {
+        filter: brightness(1);
+    }
+
+    to {
+        filter: brightness(1.24);
+    }
+}
+
+.bottom-player-card strong {
+    max-width: 100%;
+    padding: 2px 10px;
+    border: 1px solid #f8fafc;
+    border-radius: 999px;
+    font-size: 0.58rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bottom-bank-card {
+    height: 46px;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    gap: 4px;
+    background: #050505;
+    border-radius: 5px;
+    color: white;
+}
+
+.bottom-bank-card strong {
+    font-size: 0.72rem;
+}
+
+.bottom-bank-icon {
+    width: 44px;
+    height: 22px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    background:
+        radial-gradient(circle, #d7f3df 0 33%, transparent 34%),
+        linear-gradient(90deg, #f8fafc 0 20%, #15803d 20% 80%, #f8fafc 80%);
+}
+
+.bottom-end-turn-button {
+    height: 40px;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    padding: 6px;
+    background: #07551f;
+    border-radius: 5px;
+    color: white;
+}
+
+.bottom-end-turn-button span {
+    font-size: 0.66rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.bottom-end-turn-button strong {
+    font-size: 0.82rem;
 }
 
 /* TABLE */
 
 .game-table {
+    --opponent-strip-height: clamp(90px, 14vw, 118px);
     width: 100%;
+    height: 100%;
     display: grid;
-    gap: 7px;
-    padding: 8px;
-    background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.16), transparent 32%),
-        #0b5f34;
-    border: 5px solid #06351f;
-    border-radius: 28px;
-    box-shadow:
-        inset 0 0 36px rgba(0, 0, 0, 0.38),
-        0 10px 0 rgba(0, 0, 0, 0.28);
+    gap: 8px;
+    padding: 10px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     overflow: hidden;
 }
 
@@ -229,7 +508,7 @@ select {
         "top"
         "center"
         "bottom";
-    grid-template-rows: auto minmax(130px, auto) auto;
+    grid-template-rows: minmax(84px, auto) 1fr minmax(238px, auto);
 }
 
 .game-table-4 {
@@ -237,7 +516,7 @@ select {
         "top top top"
         "left center right"
         "bottom bottom bottom";
-    grid-template-columns: minmax(148px, 0.7fr) minmax(210px, 1.35fr) minmax(148px, 0.7fr);
+    grid-template-columns: minmax(176px, 0.86fr) minmax(190px, 1.12fr) minmax(176px, 0.86fr);
     grid-template-rows: auto minmax(170px, auto) auto;
     align-items: stretch;
 }
@@ -268,9 +547,9 @@ select {
     display: grid;
     gap: 5px;
     padding: 5px;
-    background: rgba(248, 241, 220, 0.94);
-    border: 3px solid var(--ink);
-    border-radius: 14px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -302,73 +581,206 @@ select {
     font-weight: 1000;
 }
 
-/* CENTER */
+.player-sets-count {
+    padding: 2px 5px;
+    background: rgba(5, 5, 5, 0.86);
+    color: white;
+    border-radius: 5px;
+    line-height: 1;
+}
 
-.table-center {
-    grid-area: center;
-    min-height: clamp(100px, 20vw, 170px);
+.player-bank-card {
+    min-width: 48px;
+    height: 34px;
     display: grid;
     place-items: center;
+    gap: 2px;
+    padding: 3px 5px;
+    background: #050505;
+    border-radius: 5px;
+    color: white;
+}
+
+.player-bank-card strong {
+    font-size: 0.58rem;
+    line-height: 1;
+}
+
+.player-bank-icon {
+    width: 32px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid #d1d5db;
     background:
-        radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 35%),
-        rgba(6, 53, 31, 0.68);
-    border: 3px dashed rgba(255, 255, 255, 0.5);
-    border-radius: 24px;
+        radial-gradient(circle, #d7f3df 0 33%, transparent 34%),
+        linear-gradient(90deg, #f8fafc 0 20%, #15803d 20% 80%, #f8fafc 80%);
 }
 
-.game-table-4 .table-center {
-    min-height: 100%;
-}
-
-.table-seat-left .player-area,
-.table-seat-right .player-area {
+.compact-player-area {
+    gap: 3px;
+    padding: 3px;
+    border-width: 0;
+    border-radius: 10px;
     align-content: start;
 }
 
-.table-seat-left .player-area-header,
-.table-seat-right .player-area-header {
+.compact-player-area .player-area-header {
     align-items: flex-start;
     flex-direction: column;
+    gap: 3px;
 }
 
-.table-seat-left .player-header-actions,
-.table-seat-right .player-header-actions {
+.compact-player-area .player-area-header h2 {
+    max-width: 100%;
+    padding: 2px 5px;
+    border-width: 1px;
+    border-radius: 5px;
+    font-size: clamp(0.52rem, 1.25vw, 0.68rem);
+}
+
+.compact-player-area .player-header-actions {
     width: 100%;
     justify-content: space-between;
 }
 
-.table-seat-left .property-groups,
-.table-seat-right .property-groups {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.compact-player-area .player-header-actions span {
+    min-width: 0;
+    font-size: clamp(0.48rem, 1.1vw, 0.60rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.table-seat-left .property-group,
-.table-seat-right .property-group {
-    height: 42px;
+.compact-player-area .hand-zone,
+.compact-player-area .table-zone {
+    padding: 2px;
+    border-width: 1px;
+    border-radius: 7px;
 }
 
-.table-seat-left .hidden-hand-row,
-.table-seat-right .hidden-hand-row {
-    --default-card-overlap: 34px;
-    --min-visible-card-width: 16px;
+.compact-player-area .hand-zone h3,
+.compact-player-area .table-zone h3 {
+    margin-bottom: 2px;
+    font-size: clamp(0.48rem, 1.1vw, 0.60rem);
+}
+
+.compact-player-area .property-groups {
+    --property-box-size: clamp(24px, 3vw, 30px);
+    grid-template-columns: repeat(5, var(--property-box-size));
+    justify-content: center;
+    gap: 2px;
+}
+
+.compact-player-area .hidden-hand-row {
+    --default-card-overlap: 28px;
+    --min-visible-card-width: 10px;
+    padding: 1px 0 3px;
     justify-content: flex-start;
 }
 
-.table-seat-left .hidden-hand-row>.small-card-back,
-.table-seat-right .hidden-hand-row>.small-card-back {
-    flex-basis: 52px;
-    width: 52px;
-    min-width: 52px;
-    max-width: 52px;
-    height: 76px;
-    min-height: 76px;
-    max-height: 76px;
-    font-size: 0.46rem;
+.compact-player-area .hidden-hand-row>.small-card-back {
+    flex-basis: 40px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 56px;
+    min-height: 56px;
+    max-height: 56px;
+    border-width: 2px;
+    border-radius: 6px;
+    font-size: 0.36rem;
+    letter-spacing: 0;
 }
 
-.table-seat-left .hidden-hand-row>.small-card-back:first-child,
-.table-seat-right .hidden-hand-row>.small-card-back:first-child {
+.compact-player-area .hidden-hand-row>.small-card-back:first-child {
     margin-left: 0;
+}
+
+.table-seat-bottom .player-area {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-content: end;
+    gap: 16px;
+}
+
+.table-seat-bottom .player-area-header {
+    display: none;
+}
+
+.table-seat-bottom .table-zone {
+    align-self: end;
+    padding: 2px;
+}
+
+.table-seat-bottom .property-groups {
+    align-content: center;
+    align-items: center;
+}
+
+.table-seat-bottom .hand-zone h3 {
+    display: none;
+}
+
+.table-seat-bottom .table-hand-row {
+    --default-card-overlap: 46px;
+    --min-visible-card-width: 50px;
+    justify-content: flex-start;
+    padding-left: 0;
+    overflow: visible;
+}
+
+.table-seat-top .compact-player-area {
+    height: var(--opponent-strip-height);
+    grid-template-columns: minmax(92px, 0.9fr) minmax(72px, 0.7fr) minmax(0, 2.6fr);
+    grid-template-areas: "opponent-header opponent-hand opponent-properties";
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.table-seat-top .compact-player-area .player-area-header {
+    grid-area: opponent-header;
+}
+
+.table-seat-top .compact-player-area .hand-zone {
+    grid-area: opponent-hand;
+}
+
+.table-seat-top .compact-player-area .table-zone {
+    grid-area: opponent-properties;
+}
+
+.table-seat-top .compact-player-area .property-groups {
+    height: auto;
+    grid-template-columns: repeat(5, var(--property-box-size));
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+.table-seat-top .compact-player-area .property-group {
+    height: auto;
+    aspect-ratio: 1 / 1;
+}
+
+.table-seat-left .compact-player-area .property-groups,
+.table-seat-right .compact-player-area .property-groups {
+    grid-template-columns: repeat(4, var(--property-box-size));
+}
+
+/* CENTER */
+
+.table-center {
+    grid-area: center;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.game-table-4 .table-center {
+    min-height: 100%;
 }
 
 .empty-table-label {
@@ -387,17 +799,21 @@ select {
     width: var(--card-width);
     height: var(--card-height);
     position: relative;
-    overflow: hidden;
-    border-radius: 12px;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    display: grid;
+    place-items: center;
+    padding: 0;
 }
 
 .table-played-card .deal-card {
-    width: var(--card-width);
-    min-width: var(--card-width);
-    max-width: var(--card-width);
-    height: var(--card-height);
-    min-height: var(--card-height);
-    max-height: var(--card-height);
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
     transform: none;
     box-shadow: none;
 }
@@ -407,10 +823,10 @@ select {
 .hand-zone,
 .table-zone {
     min-width: 0;
-    padding: 4px;
-    background: #d7f3df;
-    border: 2px solid var(--ink);
-    border-radius: 10px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -423,59 +839,61 @@ select {
 /* PROPERTIES */
 
 .property-groups {
+    --property-box-size: clamp(24px, 3vw, 30px);
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(5, var(--property-box-size));
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    gap: 2px;
 }
 
 .property-group {
     position: relative;
     min-width: 0;
-    height: 54px;
+    width: var(--property-box-size);
+    aspect-ratio: 1 / 1;
     display: grid;
-    grid-template-rows: 13px 1fr;
-    background: #f8fafc;
-    border: 2px solid var(--ink);
-    border-radius: 7px;
+    background: transparent;
+    border: 1px solid rgba(248, 250, 252, 0.45);
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .property-group-color {
-    width: 100%;
-    height: 100%;
-    border-bottom: 2px solid var(--ink);
+    display: none;
 }
 
 .property-card-slots {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    gap: 2px;
-    padding: 3px;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: repeat(var(--property-slot-count, 3), minmax(0, 1fr));
+    gap: 1px;
+    padding: 1px;
+    background: transparent;
+}
+
+.property-slot {
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid rgba(248, 250, 252, 0.35);
+    border-radius: 0;
+    background: transparent;
+    cursor: default;
 }
 
 .property-slot-filled {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--ink);
-    border-radius: 4px;
-}
-
-.property-slot-filled select {
-    height: 100%;
-    padding: 1px;
-    font-size: 0.42rem;
-    border: 0;
-    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(5, 5, 5, 0.45);
+    cursor: pointer;
 }
 
 .property-slot-wild {
     position: relative;
-    outline: 2px dashed white;
-    outline-offset: -4px;
+    outline: 1px solid rgba(255, 255, 255, 0.72);
+    outline-offset: -2px;
 }
 
-.property-slot-wild::after {
+.property-slot-wild-icon-disabled::after {
     content: "↺";
     position: absolute;
     right: 2px;
@@ -490,6 +908,11 @@ select {
     border-radius: 50%;
     font-size: 0.55rem;
     font-weight: 1000;
+}
+
+.property-slot-wild::after {
+    content: none;
+    display: none;
 }
 
 .complete-set {
@@ -523,13 +946,14 @@ select {
     min-width: 0;
     display: flex;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0;
     overflow: hidden;
-    padding: 3px 0 8px;
+    padding: 0;
 }
 
 .table-hand-row>.deal-card,
+.table-hand-row>.draggable-card-shell,
 .small-card-back {
     flex: 0 0 var(--card-width);
     width: var(--card-width);
@@ -542,8 +966,37 @@ select {
 }
 
 .table-hand-row>.deal-card:first-child,
+.table-hand-row>.draggable-card-shell:first-child,
 .small-card-back:first-child {
     margin-left: 0;
+}
+
+.draggable-card-shell {
+    position: relative;
+    cursor: grab;
+    touch-action: none;
+    animation: card-arrive 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.draggable-card-shell:active {
+    z-index: 120;
+    cursor: grabbing;
+}
+
+.draggable-card-shell.is-dragging {
+    z-index: 300;
+    pointer-events: none;
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(-3deg) scale(1.08);
+    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.5));
+}
+
+.draggable-card-shell .deal-card {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
 }
 
 .card-back,
@@ -557,12 +1010,36 @@ select {
             #b51218 9px,
             #b51218 18px);
     color: white;
-    border: 3px solid white;
-    border-radius: 12px;
+    border: 2px solid #1f2937;
+    border-radius: 4px;
     font-size: clamp(0.5rem, 1.2vw, 0.7rem);
     font-weight: 1000;
     letter-spacing: 0.08em;
     box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
+}
+
+@keyframes card-arrive {
+    from {
+        opacity: 0;
+        transform: translate(-26px, 42px) rotate(-10deg) scale(0.72);
+    }
+
+    65% {
+        opacity: 1;
+        transform: translate(4px, -6px) rotate(2deg) scale(1.04);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) rotate(0) scale(1);
+    }
+}
+
+.table-played-card,
+.property-slot-filled,
+.bottom-bank-icon,
+.small-card-back {
+    animation: card-arrive 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* CARD */
@@ -570,8 +1047,8 @@ select {
 .deal-card {
     position: relative;
     display: grid;
-    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-    gap: 3px;
+    grid-template-rows: 36px 42px 58px minmax(0, 1fr);
+    gap: 4px;
     padding: 6px;
     background: var(--paper);
     color: var(--ink);
@@ -596,40 +1073,119 @@ select {
     background: white;
     border: 2px solid var(--ink);
     border-radius: 50%;
-    font-size: 0.55rem;
+    font-size: 0.66rem;
     font-weight: 1000;
 }
 
-.deal-property-bar,
-.deal-non-property-top-space {
+.property-preview-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.property-preview-modal {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(17, 24, 39, 0.94);
+    border: 2px solid rgba(248, 250, 252, 0.8);
+    border-radius: 12px;
+}
+
+.property-preview-modal h2 {
+    margin: 0;
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.property-preview-modal .deal-card {
+    width: 160px;
+    min-width: 160px;
+    max-width: 160px;
+    height: 228px;
+    min-height: 228px;
+    max-height: 228px;
+}
+
+.property-color-change-modal {
+    width: min(94vw, 420px);
+}
+
+.property-color-change-modal .property-color-choice-grid {
+    width: 100%;
+}
+
+.property-preview-modal button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #07551f;
+    color: white;
+}
+
+.property-preview-modal .property-color-choice {
+    background: var(--property-choice-color);
+    border-color: var(--ink);
+}
+
+.deal-card-top-band {
+    position: relative;
     height: 36px;
     margin: -6px -6px 1px;
     border-bottom: 3px solid var(--ink);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+
+.deal-card-top-band::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.deal-property-bar {
+    position: absolute;
+    inset: 0;
+    height: 100%;
 }
 
 .deal-property-bar.split {
+    height: 100%;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(1px, 1fr));
 }
 
 .deal-card-header {
     min-width: 0;
-    min-height: 0;
+    min-height: 42px;
+    display: grid;
+    place-items: center;
     text-align: center;
     overflow: visible;
+    padding: 0 3px;
 }
 
 .deal-card-header p {
     margin: 0;
-    font-size: 0.48rem;
+    font-size: 0.58rem;
+    line-height: 1;
     font-weight: 1000;
     text-transform: uppercase;
 }
 
 .deal-card-header h3 {
-    margin: 1px 0 0;
-    font-size: 0.72rem;
-    line-height: 1.03;
+    margin: 0;
+    font-size: 0.64rem;
+    line-height: 1;
     overflow-wrap: anywhere;
     hyphens: auto;
 }
@@ -637,63 +1193,82 @@ select {
 .deal-money-center {
     display: grid;
     place-items: center;
+    grid-row: 3;
 }
 
-.deal-money-center span {
-    width: 58px;
-    height: 58px;
+.deal-money-center span,
+.deal-action-icon,
+.deal-action-name-circle {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    max-width: 64px;
+    max-height: 64px;
     display: grid;
     place-items: center;
     background: #fef3c7;
     border: 3px solid var(--ink);
     border-radius: 50%;
-    font-size: 1.15rem;
+}
+
+.deal-money-center span {
+    font-size: 1.34rem;
     font-weight: 1000;
 }
 
 .deal-rent-table {
+    width: 60%;
+    justify-self: center;
     display: grid;
-    gap: 1px;
-    padding: 3px;
-    background: white;
-    border: 2px solid var(--ink);
-    border-radius: 7px;
-    font-size: 0.60rem;
-    line-height: 1.04;
+    gap: 0;
+    padding: 5px 6px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    font-size: 0.66rem;
+    line-height: 0.88;
     overflow: hidden;
+    grid-row: 3 / span 2;
+    align-self: start;
+    margin-top: 4px;
+    grid-auto-rows: min-content;
 }
 
 .deal-rent-table strong {
     text-align: center;
     text-transform: uppercase;
+    line-height: 0.9;
+    margin-bottom: 5px;
 }
 
 .deal-rent-table div {
+    width: 100%;
+    justify-self: center;
     display: flex;
     justify-content: space-between;
-    gap: 3px;
+    gap: 2px;
+    line-height: 0.88;
 }
 
 .deal-action-icon {
-    min-height: 34px;
-    display: grid;
-    place-items: center;
-    margin: 1px 8px;
+    grid-row: 3;
+    justify-self: center;
+    align-self: center;
+    margin: 0;
     background: white;
-    border: 3px solid var(--ink);
-    border-radius: 50%;
     text-align: center;
     overflow: hidden;
 }
 
 .deal-action-icon span {
-    font-size: 0.56rem;
+    font-size: 0.66rem;
     font-weight: 1000;
 }
 
 .rent-icon span {
-    width: 32px;
-    height: 32px;
+    width: 26px;
+    height: 26px;
     display: grid;
     place-items: center;
     background: white;
@@ -702,14 +1277,15 @@ select {
 }
 
 .deal-card-text {
+    grid-row: 4;
     min-height: 0;
     margin: 0;
-    padding: 3px;
-    background: white;
-    border: 2px solid var(--ink);
-    border-radius: 7px;
-    font-size: 0.58rem;
-    line-height: 1.03;
+    padding: 1px 2px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: 0.68rem;
+    line-height: 1.12;
     overflow: visible;
     overflow-wrap: anywhere;
     hyphens: auto;
@@ -719,10 +1295,27 @@ select {
     background: #dcfce7;
 }
 
+.deal-card-money .deal-card-header {
+    padding-left: 3px;
+}
+
+.deal-card-money .deal-money-center {
+    align-self: center;
+}
+
+.deal-card-property .deal-card-header,
+.deal-card-wild .deal-card-header {
+    padding-left: 3px;
+}
+
+.deal-card-property .deal-card-header h3,
+.deal-card-wild .deal-card-header h3 {
+    display: block;
+    font-size: 0.70rem;
+    line-height: 1;
+}
+
 .deal-card-action {
-    grid-template-rows: 10% 35% 20% 29%;
-    gap: 2% 0;
-    padding: 8px;
     background: #fee2e2;
 }
 
@@ -731,25 +1324,16 @@ select {
 }
 
 .deal-card-action .deal-card-value {
-    top: 8px;
-    left: 8px;
-}
-
-.deal-card-action .deal-non-property-top-space {
-    display: none;
+    top: 3px;
+    left: 3px;
 }
 
 .deal-card-action .deal-card-header {
-    grid-row: 1;
-    min-height: 0;
-    display: grid;
-    place-items: center;
-    padding-left: 28px;
+    padding-left: 3px;
 }
 
 .deal-card-action .deal-card-header p {
-    font-size: 0.72rem;
-    line-height: 1;
+    font-size: 0.62rem;
 }
 
 .deal-card-action .deal-card-header h3 {
@@ -757,43 +1341,32 @@ select {
 }
 
 .deal-action-name-circle {
-    grid-row: 2;
-    width: auto;
-    max-width: 68%;
-    height: min(100%, 72px);
+    grid-row: 3;
     aspect-ratio: 1 / 1;
     align-self: center;
     justify-self: center;
-    display: grid;
-    place-items: center;
-    padding: 8px;
     background: white;
-    border: 3px solid var(--ink);
-    border-radius: 50%;
+    padding: 6px;
     text-align: center;
 }
 
 .deal-action-name-circle strong {
-    font-size: 0.64rem;
+    font-size: 0.74rem;
     line-height: 1.05;
     text-transform: uppercase;
     overflow-wrap: anywhere;
 }
 
 .deal-card-action .deal-card-text {
-    grid-row: 3;
+    grid-row: 4;
     align-self: stretch;
     display: grid;
     place-items: center;
     margin: 0;
-    padding: 5px;
-    font-size: 0.52rem;
-    line-height: 1.05;
+    padding: 2px 3px;
+    font-size: 0.68rem;
+    line-height: 1.12;
     text-align: center;
-}
-
-.deal-card-action .card-actions {
-    grid-row: 4;
 }
 
 .deal-card-rent {
@@ -823,17 +1396,23 @@ select {
 .discard-panel,
 .winner-banner,
 .notice {
-    width: 100%;
+    position: absolute;
+    z-index: 20;
+    left: 50%;
+    top: 74px;
+    width: min(92%, 360px);
     display: grid;
     gap: 8px;
     padding: 10px;
-    margin-bottom: 8px;
+    margin: 0;
     background: var(--cream);
     border: 3px solid var(--ink);
     border-radius: 14px;
+    transform: translateX(-50%);
 }
 
 .payment-modal-backdrop,
+.response-modal-backdrop,
 .discard-modal-backdrop,
 .action-choice-backdrop {
     position: fixed;
@@ -845,7 +1424,36 @@ select {
     background: rgba(0, 0, 0, 0.52);
 }
 
+.action-choice-backdrop {
+    pointer-events: none;
+}
+
+.action-choice-backdrop-active {
+    pointer-events: auto;
+}
+
+.action-choice-modal {
+    pointer-events: auto;
+}
+
+.player-target-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(0, 0, 0, 0.78);
+    pointer-events: auto;
+}
+
+.is-targeting-player .player-name-timer {
+    position: relative;
+    z-index: 1100;
+    box-shadow:
+        0 0 0 3px rgba(34, 197, 94, 0.95),
+        0 0 22px rgba(34, 197, 94, 0.9);
+}
+
 .payment-modal,
+.response-modal,
 .discard-modal,
 .action-choice-modal {
     width: min(94vw, 440px);
@@ -863,6 +1471,8 @@ select {
 
 .payment-modal h2,
 .payment-modal p,
+.response-modal h2,
+.response-modal p,
 .discard-modal h2,
 .discard-modal p,
 .action-choice-modal h2 {
@@ -870,9 +1480,45 @@ select {
 }
 
 .payment-modal h2,
+.response-modal h2,
 .discard-modal h2,
 .action-choice-modal h2 {
     font-size: 1rem;
+}
+
+.response-modal {
+    justify-items: center;
+    text-align: center;
+}
+
+.response-have-card {
+    color: #d1d5db;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.response-just-say-no-card .deal-card {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    height: 214px;
+    min-height: 214px;
+    max-height: 214px;
+}
+
+.response-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.response-actions button {
+    padding: 8px;
+    background: #07551f;
+    color: white;
+    border-radius: 8px;
+    font-size: 0.78rem;
 }
 
 .action-choice-list,
@@ -891,6 +1537,67 @@ select {
     gap: 4px;
     font-size: 0.78rem;
     font-weight: 900;
+}
+
+.property-color-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+    gap: 8px;
+}
+
+.property-color-choice {
+    min-height: 54px;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+    background: var(--property-choice-color);
+    color: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 1000;
+    text-align: center;
+}
+
+.property-color-choice span {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.choice-hint {
+    padding: 8px;
+    background: rgba(17, 24, 39, 0.12);
+    border: 2px dashed rgba(17, 24, 39, 0.35);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.property-pick-card {
+    min-height: 56px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    gap: 4px;
+    background: var(--property-choice-color);
+    color: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.property-pick-card strong,
+.property-pick-card span {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.property-pick-card span {
+    font-size: 0.66rem;
+    font-weight: 900;
+}
+
+.selected-pick-card {
+    outline: 3px solid #22c55e;
 }
 
 .action-choice-cancel {
@@ -919,15 +1626,37 @@ select {
 
 .payment-card {
     display: grid;
-    gap: 2px;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    justify-items: center;
+    gap: 4px;
     min-height: 54px;
     padding: 5px;
-    text-align: left;
+    text-align: center;
     background: white;
     color: var(--ink);
     border: 2px solid var(--ink);
     font-size: 0.68rem;
     line-height: 1.05;
+}
+
+.payment-card strong {
+    align-self: end;
+}
+
+.payment-card span {
+    align-self: start;
+    font-weight: 1000;
+}
+
+.payment-card[style*="--payment-card-color"] {
+    background: var(--payment-card-color);
+    color: white;
+}
+
+.payment-card[style*="--payment-card-color"] strong,
+.payment-card[style*="--payment-card-color"] span {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .payment-card span,
@@ -948,6 +1677,8 @@ select {
 .payment-actions button {
     flex: 1;
     padding: 6px;
+    background: #07551f;
+    color: white;
     font-size: 0.78rem;
 }
 
@@ -991,45 +1722,51 @@ select {
     }
 
     .table-hand-row>.deal-card,
+    .table-hand-row>.draggable-card-shell,
     .small-card-back {
         flex: 0 0 92px;
         width: 92px;
         min-width: 92px;
         max-width: 92px;
-        height: 184px;
-        min-height: 184px;
-        max-height: 184px;
+        height: 132px;
+        min-height: 132px;
+        max-height: 132px;
         margin-left: calc(var(--hand-card-overlap) * -1);
     }
 
     .table-hand-row>.deal-card:first-child,
+    .table-hand-row>.draggable-card-shell:first-child,
     .small-card-back:first-child {
         margin-left: 0;
     }
 
     .deal-card {
+        grid-template-rows: 28px 34px 44px minmax(0, 1fr);
         padding: 3px;
         border-width: 2px;
         border-radius: 8px;
         gap: 1px;
     }
 
-    .deal-property-bar,
-    .deal-non-property-top-space {
+    .deal-card-top-band {
         height: 28px;
         margin: -3px -3px 1px;
         border-bottom-width: 2px;
     }
 
+    .deal-property-bar {
+        height: 100%;
+    }
+
     .deal-card-value span {
         width: 22px;
         height: 22px;
-        font-size: 0.45rem;
+        font-size: 0.54rem;
         border-width: 1px;
     }
 
     .deal-card-header {
-        min-height: 0;
+        min-height: 34px;
     }
 
     .deal-card-header p {
@@ -1038,29 +1775,46 @@ select {
     }
 
     .deal-card-header h3 {
-        font-size: 0.54rem;
+        font-size: 0.48rem;
         line-height: 1;
     }
 
     .deal-rent-table {
-        font-size: 0.48rem;
-        line-height: 1;
-        padding: 1px;
-        border-width: 1px;
+        width: 60%;
+        font-size: 0.51rem;
+        line-height: 0.84;
+        padding: 3px 4px;
+        border-radius: 6px;
+        margin-top: 2px;
     }
 
-    .deal-money-center span {
-        width: 32px;
-        height: 32px;
-        font-size: 0.55rem;
+    .deal-rent-table strong {
+        margin-bottom: 4px;
+    }
+
+    .deal-rent-table div {
+        width: 100%;
+        justify-self: center;
+        line-height: 0.84;
+    }
+
+    .deal-money-center span,
+    .deal-action-icon,
+    .deal-action-name-circle {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+        max-width: 48px;
+        max-height: 48px;
+        font-size: 0.58rem;
         border-width: 1px;
     }
 
     .deal-card-text {
-        font-size: 0.47rem;
-        line-height: 1;
-        padding: 1px;
-        border-width: 1px;
+        font-size: 0.56rem;
+        line-height: 1.06;
+        padding: 0;
     }
 
     .deal-card-action {
@@ -1068,35 +1822,49 @@ select {
     }
 
     .deal-card-action .deal-card-value {
-        top: 4px;
-        left: 4px;
+        top: 3px;
+        left: 3px;
     }
 
     .deal-card-action .deal-card-header {
-        padding-left: 22px;
+        padding-left: 3px;
+    }
+
+    .deal-card-money .deal-card-header,
+    .deal-card-property .deal-card-header,
+    .deal-card-wild .deal-card-header {
+        padding-left: 3px;
+    }
+
+    .deal-card-property .deal-card-header h3,
+    .deal-card-wild .deal-card-header h3 {
+        font-size: 0.53rem;
+        line-height: 1;
     }
 
     .deal-card-action .deal-card-header p {
-        font-size: 0.50rem;
+        font-size: 0.47rem;
+    }
+
+    .deal-card-action .deal-card-header h3 {
+        display: none;
+        font-size: 0.40rem;
     }
 
     .deal-action-name-circle {
-        width: auto;
-        max-width: 66%;
-        height: min(100%, 48px);
         padding: 5px;
         border-width: 2px;
     }
 
     .deal-action-name-circle strong {
-        font-size: 0.42rem;
+        font-size: 0.53rem;
         line-height: 1;
     }
 
     .deal-card-action .deal-card-text {
-        padding: 2px;
-        font-size: 0.36rem;
-        line-height: 1.04;
+        padding: 0 2px;
+        font-size: 0.50rem;
+        line-height: 1.08;
     }
 
     .card-actions button,
@@ -1125,14 +1893,15 @@ select {
     }
 
     .table-hand-row>.deal-card,
+    .table-hand-row>.draggable-card-shell,
     .small-card-back {
         flex-basis: 84px;
         width: 84px;
         min-width: 84px;
         max-width: 84px;
-        height: 168px;
-        min-height: 168px;
-        max-height: 168px;
+        height: 120px;
+        min-height: 120px;
+        max-height: 120px;
     }
 
     .deal-card-header h3 {
@@ -1153,7 +1922,8 @@ select {
     overflow: visible;
 }
 
-.table-hand-row>.deal-card {
+.table-hand-row>.deal-card,
+.table-hand-row>.draggable-card-shell {
     position: relative;
     z-index: 1;
     transition:
@@ -1164,7 +1934,9 @@ select {
 
 /* Laptop hover/focus */
 .table-hand-row>.deal-card:hover,
-.table-hand-row>.deal-card:focus-within {
+.table-hand-row>.deal-card:focus-within,
+.table-hand-row>.draggable-card-shell:hover,
+.table-hand-row>.draggable-card-shell:focus-within {
     z-index: 100;
     transform: translateY(-36px) scale(1.08);
     box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
@@ -1180,27 +1952,43 @@ select {
     }
 
     .table-hand-row>.deal-card:active,
-    .table-hand-row>.deal-card:focus-within {
+    .table-hand-row>.deal-card:focus-within,
+    .table-hand-row>.draggable-card-shell:active,
+    .table-hand-row>.draggable-card-shell:focus-within {
         z-index: 100;
         transform: translateY(-42px) scale(1.22);
         box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
     }
 
     .table-hand-row>.deal-card:first-child:active,
-    .table-hand-row>.deal-card:first-child:focus-within {
+    .table-hand-row>.deal-card:first-child:focus-within,
+    .table-hand-row>.draggable-card-shell:first-child:active,
+    .table-hand-row>.draggable-card-shell:first-child:focus-within {
         transform: translate(34px, -42px) scale(1.22);
     }
 
     .table-hand-row>.deal-card:last-child:active,
-    .table-hand-row>.deal-card:last-child:focus-within {
+    .table-hand-row>.deal-card:last-child:focus-within,
+    .table-hand-row>.draggable-card-shell:last-child:active,
+    .table-hand-row>.draggable-card-shell:last-child:focus-within {
         transform: translate(-34px, -42px) scale(1.22);
     }
 }
 
 @media (max-width: 768px) {
+    .game-table {
+        --opponent-strip-height: clamp(76px, 19vw, 90px);
+        gap: 8px;
+        padding: 8px 6px;
+    }
+
+    .game-table-2 {
+        grid-template-rows: var(--opponent-strip-height) minmax(150px, 1fr) minmax(230px, 35svh);
+    }
+
     .game-table-4 {
         gap: 4px;
-        grid-template-columns: minmax(54px, 0.58fr) minmax(92px, 1fr) minmax(54px, 0.58fr);
+        grid-template-columns: minmax(68px, 0.72fr) minmax(84px, 0.9fr) minmax(68px, 0.72fr);
         grid-template-rows: auto minmax(118px, auto) auto;
         padding: 4px;
         border-width: 3px;
@@ -1209,19 +1997,19 @@ select {
     }
 
     .game-table-4 .table-seat,
-    .game-table-4 .player-area,
-    .game-table-4 .hand-zone,
-    .game-table-4 .table-zone,
-    .game-table-4 .table-hand-row {
+    .compact-player-area,
+    .compact-player-area .hand-zone,
+    .compact-player-area .table-zone,
+    .compact-player-area .table-hand-row {
         min-width: 0;
         max-width: 100%;
         overflow: hidden;
     }
 
-    .game-table-4 .player-area {
+    .compact-player-area {
         gap: 3px;
         padding: 3px;
-        border-width: 2px;
+        border-width: 0;
         border-radius: 10px;
     }
 
@@ -1239,13 +2027,11 @@ select {
         letter-spacing: 0.06em;
     }
 
-    .table-seat-left .player-area-header,
-    .table-seat-right .player-area-header {
+    .compact-player-area .player-area-header {
         gap: 3px;
     }
 
-    .table-seat-left .player-area-header h2,
-    .table-seat-right .player-area-header h2 {
+    .compact-player-area .player-area-header h2 {
         max-width: 100%;
         padding: 2px 4px;
         border-width: 1px;
@@ -1253,13 +2039,11 @@ select {
         font-size: 0.52rem;
     }
 
-    .table-seat-left .player-header-actions,
-    .table-seat-right .player-header-actions {
+    .compact-player-area .player-header-actions {
         gap: 3px;
     }
 
-    .table-seat-left .player-header-actions span,
-    .table-seat-right .player-header-actions span {
+    .compact-player-area .player-header-actions span {
         min-width: 0;
         font-size: 0.48rem;
         overflow: hidden;
@@ -1267,35 +2051,24 @@ select {
         white-space: nowrap;
     }
 
-    .table-seat-left .property-groups,
-    .table-seat-right .property-groups {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 2px;
+    .compact-player-area .property-groups {
+        --property-box-size: clamp(20px, 5.8vw, 28px);
+        grid-template-columns: repeat(5, var(--property-box-size));
+        justify-content: center;
+        gap: 7px;
     }
 
-    .table-seat-left .property-group,
-    .table-seat-right .property-group {
-        height: 24px;
-        grid-template-rows: 7px 1fr;
-        border-width: 1px;
-        border-radius: 4px;
+    .compact-player-area .property-group {
+        min-height: 34px;
     }
 
-    .table-seat-left .property-card-slots,
-    .table-seat-right .property-card-slots {
-        gap: 1px;
-        padding: 1px;
-    }
-
-    .table-seat-left .hidden-hand-row,
-    .table-seat-right .hidden-hand-row {
+    .compact-player-area .hidden-hand-row {
         --default-card-overlap: 24px;
         --min-visible-card-width: 8px;
         padding: 1px 0 3px;
     }
 
-    .table-seat-left .hidden-hand-row>.small-card-back,
-    .table-seat-right .hidden-hand-row>.small-card-back {
+    .compact-player-area .hidden-hand-row>.small-card-back {
         flex-basis: 34px;
         width: 34px;
         min-width: 34px;
@@ -1308,12 +2081,163 @@ select {
         font-size: 0.36rem;
         letter-spacing: 0;
     }
+
+    .table-seat-top .compact-player-area {
+        grid-template-columns: minmax(58px, 0.8fr) minmax(40px, 0.55fr) minmax(0, 3.1fr);
+    }
+
+    .table-seat-top .compact-player-area .property-groups {
+        grid-template-columns: repeat(5, var(--property-box-size));
+        justify-content: center;
+    }
+
+    .table-seat-left .compact-player-area .property-groups,
+    .table-seat-right .compact-player-area .property-groups {
+        grid-template-columns: repeat(4, var(--property-box-size));
+    }
+
+    .table-seat-top .compact-player-area .property-group {
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .table-seat-top .compact-player-area .hidden-hand-row>.small-card-back {
+        flex-basis: 30px;
+        width: 30px;
+        min-width: 30px;
+        max-width: 30px;
+        height: 44px;
+        min-height: 44px;
+        max-height: 44px;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-shell {
+        grid-template-rows: 64px minmax(0, 1fr) 58px;
+    }
+
+    .game-bottom-bar {
+        grid-template-columns: minmax(46px, 0.62fr) auto minmax(82px, 1.15fr) minmax(60px, 0.72fr);
+        gap: 6px;
+        padding: 5px 7px;
+    }
+
+    .bottom-player-timer {
+        width: 44px;
+    }
+
+    .bottom-bank-card {
+        height: 44px;
+    }
+
+    .bottom-end-turn-button {
+        height: 38px;
+    }
+
+    .table-played-card {
+        width: 112px;
+        height: 156px;
+    }
+
+    .table-played-card .deal-card {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        height: 100%;
+        min-height: 100%;
+        max-height: 100%;
+    }
+
+    .table-center {
+        align-content: center;
+    }
+
+    .table-seat-bottom .player-area {
+        gap: 12px;
+        min-height: 0;
+    }
+
+    .table-seat-bottom .table-zone {
+        padding: 2px;
+    }
+
+    .table-seat-bottom .property-groups {
+        align-content: center;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .table-seat-bottom .property-group {
+        height: auto;
+        aspect-ratio: 1 / 1;
+        min-height: 34px;
+    }
+
+    .table-seat-bottom .table-hand-row {
+        --default-card-overlap: 44px;
+        --min-visible-card-width: 46px;
+        --card-width: 112px;
+        --card-height: 156px;
+        padding-top: 0;
+        padding-bottom: 0;
+        overflow: visible;
+    }
+
+    .table-seat-bottom .table-hand-row>.deal-card,
+    .table-seat-bottom .table-hand-row>.draggable-card-shell {
+        flex-basis: 112px;
+        width: 112px;
+        min-width: 112px;
+        max-width: 112px;
+        height: 156px;
+        min-height: 156px;
+        max-height: 156px;
+    }
+
+    .table-seat-top .compact-player-area .property-groups {
+        grid-template-columns: repeat(5, var(--property-box-size));
+        justify-content: center;
+        gap: 7px;
+    }
+
+    .table-seat-left .compact-player-area .property-groups,
+    .table-seat-right .compact-player-area .property-groups {
+        grid-template-columns: repeat(4, var(--property-box-size));
+    }
+
+    .table-seat-top .compact-player-area .property-group {
+        height: auto;
+        aspect-ratio: 1 / 1;
+        min-height: 34px;
+    }
+
+    .table-seat-top .compact-player-area .hand-zone h3,
+    .table-seat-top .compact-player-area .table-zone h3 {
+        display: none;
+    }
 }
 
 .player-header-actions {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.compact-player-area .player-bank-card {
+    min-width: 38px;
+    height: 28px;
+    padding: 2px 4px;
+    gap: 1px;
+}
+
+.compact-player-area .player-bank-card strong {
+    font-size: 0.50rem;
+}
+
+.compact-player-area .player-bank-icon {
+    width: 25px;
+    height: 11px;
 }
 
 .small-end-turn-button {
@@ -1332,14 +2256,34 @@ select {
 
 .player-name-timer {
     position: relative;
+    width: 50px;
+    aspect-ratio: 1;
     display: inline-grid;
     place-items: center;
+    padding: 5px;
+    flex: 0 0 auto;
     min-width: 0;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    background: #07551f;
+    cursor: pointer;
 }
 
 .player-name-timer h2 {
     position: relative;
     z-index: 2;
+    max-width: 100%;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    color: white;
+    font-size: 0.48rem;
+    line-height: 1.05;
+    text-align: center;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .turn-timer-ring {
@@ -1347,8 +2291,12 @@ select {
     inset: -5px;
     z-index: 1;
     border-radius: 12px;
-    background: conic-gradient(#facc15 var(--timer-progress),
-            rgba(17, 24, 39, 0.18) 0deg);
+    background: conic-gradient(#07551f var(--timer-progress), #050505 0deg);
+}
+
+.player-name-timer .turn-timer-ring {
+    inset: 0;
+    border-radius: inherit;
 }
 
 .turn-timer-ring::after {
@@ -1359,12 +2307,51 @@ select {
     background: #d71920;
 }
 
+.player-name-timer .turn-timer-ring::after {
+    display: none;
+}
+
+.player-name-timer.active {
+    width: 58px;
+    box-shadow:
+        0 0 0 3px rgba(74, 222, 128, 0.95),
+        0 0 16px rgba(34, 197, 94, 0.85);
+    animation: timer-glow 900ms ease-in-out infinite alternate;
+}
+
+.compact-player-area .player-name-timer {
+    width: 46px;
+    padding: 5px;
+    border-width: 2px;
+    border-radius: 50%;
+}
+
+.compact-player-area .player-name-timer.active {
+    width: 52px;
+}
+
+.compact-player-area .player-name-timer h2 {
+    max-width: 100%;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    color: white;
+    font-size: 0.44rem;
+    line-height: 1.05;
+    text-align: center;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
 .winner-claim-page {
     min-height: 100svh;
     display: grid;
     place-items: center;
     padding: 18px;
-    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    background:
+        radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, #201d1e, #332d2f 48%, #181617);
 }
 
 .winner-claim-card {
@@ -1372,11 +2359,12 @@ select {
     display: grid;
     gap: 16px;
     padding: 24px;
-    background: var(--cream);
-    border: 5px solid var(--ink);
-    border-radius: 24px;
+    background: rgba(18, 17, 18, 0.96);
+    color: #f8fafc;
+    border: 2px solid rgba(248, 250, 252, 0.12);
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+    box-shadow: 0 18px 0 rgba(0, 0, 0, 0.38);
 }
 
 .winner-claim-card h1,
@@ -1385,9 +2373,16 @@ select {
 }
 
 .claim-amount {
+    justify-self: center;
+    min-width: 150px;
+    padding: 8px 18px;
+    background: #07551f;
+    border: 3px solid #22c55e;
+    border-radius: 999px;
     font-size: 3rem;
     font-weight: 1000;
-    color: var(--green);
+    color: white;
+    line-height: 1;
 }
 
 .winner-claim-card form {
@@ -1411,8 +2406,9 @@ select {
 .phone-row span {
     display: grid;
     place-items: center;
-    background: white;
-    border: 2px solid var(--ink);
+    background: #050505;
+    color: white;
+    border: 2px solid rgba(248, 250, 252, 0.18);
     border-radius: 8px;
     font-weight: 900;
 }
@@ -1423,7 +2419,7 @@ select {
 }
 
 .claim-success {
-    color: #16a34a;
+    color: #22c55e;
     font-weight: 900;
 }
 
@@ -1432,7 +2428,9 @@ select {
     display: grid;
     place-items: center;
     padding: 18px;
-    background: linear-gradient(135deg, var(--green), var(--dark-green));
+    background:
+        radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.08), transparent 34%),
+        linear-gradient(135deg, #201d1e, #332d2f 48%, #181617);
 }
 
 .language-card {
@@ -1441,11 +2439,12 @@ select {
     display: grid;
     gap: 18px;
     padding: clamp(18px, 4vw, 24px);
-    background: var(--cream);
-    border: 5px solid var(--ink);
-    border-radius: 24px;
+    background: rgba(18, 17, 18, 0.96);
+    color: #f8fafc;
+    border: 2px solid rgba(248, 250, 252, 0.12);
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.35);
+    box-shadow: 0 18px 0 rgba(0, 0, 0, 0.38);
     overflow: hidden;
 }
 
@@ -1474,11 +2473,17 @@ select {
 
 .language-card h1 span {
     font-size: 0.78em;
+    color: #d1d5db;
 }
 
 .language-card h1,
 .language-card p {
     margin: 0;
+}
+
+.language-card p {
+    color: #d1d5db;
+    font-weight: 800;
 }
 
 .language-buttons {
@@ -1489,6 +2494,10 @@ select {
 
 .language-buttons button {
     min-width: 0;
+    background: #07551f;
+    color: white;
+    border: 2px solid #22c55e;
+    border-radius: 8px;
     overflow-wrap: anywhere;
 }
 

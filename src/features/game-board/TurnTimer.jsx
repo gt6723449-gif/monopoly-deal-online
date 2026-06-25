@@ -2,8 +2,15 @@ import { useEffect, useState } from "react";
 
 const TURN_SECONDS = 30;
 
-export function TurnTimer({ game, player, dispatch, isRunning = false }) {
-    const [timeLeft, setTimeLeft] = useState(TURN_SECONDS);
+export function TurnTimer({
+    game,
+    player,
+    dispatch,
+    isRunning = false,
+    durationSeconds = TURN_SECONDS,
+    shouldDispatchOnExpire = true,
+}) {
+    const [timeLeft, setTimeLeft] = useState(durationSeconds);
 
     const timerKey = `${game.currentPlayerId}_${game.turn.actionsUsed}_${game.turn.phase}`;
 
@@ -15,13 +22,24 @@ export function TurnTimer({ game, player, dispatch, isRunning = false }) {
         game.turn.actionsUsed < game.turn.maxActions;
 
     useEffect(() => {
-        setTimeLeft(TURN_SECONDS);
-    }, [timerKey]);
+        setTimeLeft(durationSeconds);
+    }, [timerKey, durationSeconds]);
 
     useEffect(() => {
         if (!isActive) return;
 
         if (timeLeft <= 0) {
+            if (!shouldDispatchOnExpire) return;
+
+            const expireEvent = new CustomEvent("monopoly-deal-turn-expire", {
+                cancelable: true,
+                detail: {
+                    playerId: player.id,
+                },
+            });
+
+            if (!window.dispatchEvent(expireEvent)) return;
+
             dispatch({
                 type: player.hand.length > 0 ? "AUTO_PLAY_RANDOM_CARD" : "END_TURN",
                 payload: {
@@ -37,9 +55,9 @@ export function TurnTimer({ game, player, dispatch, isRunning = false }) {
         }, 1000);
 
         return () => window.clearTimeout(timeoutId);
-    }, [isActive, timeLeft, player.id, player.hand.length, dispatch]);
+    }, [isActive, timeLeft, player.id, player.hand.length, dispatch, shouldDispatchOnExpire]);
 
-    const progress = Math.max(0, Math.min(1, timeLeft / TURN_SECONDS));
+    const progress = Math.max(0, Math.min(1, timeLeft / durationSeconds));
 
     return (
         <span

@@ -1,9 +1,27 @@
 import { useState } from "react";
-import { PROPERTY_SETS } from "../../game/data/propertySets";
 import { t } from "../../i18n/translations";
 
-function formatColorName(color) {
-    return PROPERTY_SETS[color]?.label || color;
+const PROPERTY_COLORS = {
+    brown: "#8b4513",
+    lightBlue: "#8ed8f8",
+    pink: "#ff5aa5",
+    orange: "#f97316",
+    red: "#dc2626",
+    yellow: "#facc15",
+    green: "#16a34a",
+    darkBlue: "#1d4ed8",
+    railroad: "#111827",
+    utility: "#94a3b8",
+};
+
+function getPaymentCardStyle(card) {
+    if (card.paymentSource !== "property") return undefined;
+
+    const color = PROPERTY_COLORS[card.meta?.activeColor] || PROPERTY_COLORS[card.paymentGroup];
+
+    return {
+        "--payment-card-color": color,
+    };
 }
 
 export function PaymentPanel({ game, dispatch, language }) {
@@ -97,13 +115,10 @@ export function PaymentPanel({ game, dispatch, language }) {
                 aria-modal="true"
                 aria-labelledby="payment-panel-title"
             >
-                <h2 id="payment-panel-title">{t(language, "paymentRequired")}</h2>
-
-                <p className="payment-summary">
-                    <strong>{payer.name}</strong> {t(language, "owes")}{" "}
-                    <strong>${pendingPayment.amount}M</strong> {t(language, "to")}{" "}
-                    <strong>{receiver.name}</strong>.
-                </p>
+                <h2 id="payment-panel-title">
+                    {t(language, "paymentRequired")}: {receiver.name} Played{" "}
+                    {pendingPayment.reason || ""}
+                </h2>
 
                 <div className="payment-totals">
                     <span>
@@ -129,17 +144,13 @@ export function PaymentPanel({ game, dispatch, language }) {
                                         ? "payment-card selected-payment-card"
                                         : "payment-card"
                                 }
+                                style={getPaymentCardStyle(card)}
                                 onClick={() => toggleCard(card.instanceId)}
                             >
-                                <strong>{card.name}</strong>
+                                <strong>
+                                    {card.paymentSource === "bank" ? t(language, "bank") : card.name}
+                                </strong>
                                 <span>${card.value}M</span>
-                                <small>
-                                    {card.paymentSource === "bank"
-                                        ? t(language, "bank")
-                                        : `${t(language, "property")}: ${formatColorName(
-                                            card.paymentGroup
-                                        )}`}
-                                </small>
                             </button>
                         );
                     })}

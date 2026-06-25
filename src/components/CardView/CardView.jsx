@@ -150,18 +150,16 @@ export function CardView({ card, children, compact = false, language = "en" }) {
 
   return (
     <article className={`deal-card deal-card-${card.type}`}>
-      {!isMoney && (
-        <div className="deal-card-value">
-          <span>{getCardValue(card)}</span>
-        </div>
-      )}
+      <div className="deal-card-value">
+        <span>{getCardValue(card)}</span>
+      </div>
 
-      {isProperty && <PropertyColorBar card={card} />}
-
-      {!isProperty && <div className="deal-non-property-top-space" />}
+      <div className="deal-card-top-band">
+        {isProperty && <PropertyColorBar card={card} />}
+      </div>
 
       <header className="deal-card-header">
-        {!isMoney && <p>{getCardTypeLabel(card, language)}</p>}
+        <p>{getCardTypeLabel(card, language)}</p>
         <h3>{translatedName}</h3>
       </header>
 

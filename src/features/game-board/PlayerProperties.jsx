@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { CardView } from "../../components/CardView/CardView";
 import { PROPERTY_SETS } from "../../game/data/propertySets";
 
 const PROPERTY_GROUPS = Object.keys(PROPERTY_SETS);
@@ -19,7 +21,69 @@ function formatColorName(color) {
   return PROPERTY_SETS[color]?.label || color;
 }
 
-export function PlayerProperties({ player, currentPlayer, game, dispatch }) {
+function getPropertySlotBackground(card, group) {
+  const activeColor = card.meta?.activeColor || group;
+  const activeColorValue = PROPERTY_COLORS[activeColor] || PROPERTY_COLORS[group];
+  const colors = card.meta?.colors || [];
+  const extraColors = colors.filter((color) => color !== activeColor);
+
+  if (card.type !== "wild" || extraColors.length === 0) {
+    return activeColorValue;
+  }
+
+  const passiveStops = extraColors
+    .map((color, index) => {
+      const start = 75 + (index / extraColors.length) * 25;
+      const end = 75 + ((index + 1) / extraColors.length) * 25;
+      return `${PROPERTY_COLORS[color] || "#cbd5e1"} ${start}% ${end}%`;
+    })
+    .join(", ");
+
+  return `linear-gradient(90deg, ${activeColorValue} 0 75%, ${passiveStops})`;
+}
+
+export function PlayerProperties({
+  player,
+  currentPlayer,
+  game,
+  dispatch,
+  language = "en",
+}) {
+  const [previewCard, setPreviewCard] = useState(null);
+  const [colorChoiceCard, setColorChoiceCard] = useState(null);
+  const canChangeWildColor =
+    player.id === currentPlayer.id &&
+    game.status === "playing" &&
+    game.currentPlayerId === currentPlayer.id &&
+    game.turn.phase === "action";
+
+  function handlePropertyClick(card) {
+    if (
+      canChangeWildColor &&
+      card.type === "wild" &&
+      (card.meta?.colors || []).length > 1
+    ) {
+      setColorChoiceCard(card);
+      return;
+    }
+
+    setPreviewCard(card);
+  }
+
+  function changeWildColor(color) {
+    if (!colorChoiceCard) return;
+
+    dispatch({
+      type: "CHANGE_WILD_COLOR",
+      payload: {
+        playerId: currentPlayer.id,
+        cardInstanceId: colorChoiceCard.instanceId,
+        newColor: color,
+      },
+    });
+    setColorChoiceCard(null);
+  }
+
   return (
     <section className="table-zone">
       <div className="property-groups">
@@ -27,6 +91,7 @@ export function PlayerProperties({ player, currentPlayer, game, dispatch }) {
           const setDefinition = PROPERTY_SETS[group];
           const currentCount = player.properties[group].length;
           const isComplete = currentCount >= setDefinition.requiredCount;
+          const slotCount = currentCount > 0 ? setDefinition.requiredCount : 1;
 
           return (
             <div
@@ -35,57 +100,45 @@ export function PlayerProperties({ player, currentPlayer, game, dispatch }) {
               title={`${formatColorName(group)} ${currentCount}/${setDefinition.requiredCount}`}
             >
               <div
-                className="property-group-color"
-                style={{ background: PROPERTY_COLORS[group] }}
-              />
+                className="property-card-slots"
+                style={{
+                  "--property-slot-count": slotCount,
+                }}
+              >
+                {Array.from({ length: slotCount }).map((_, index) => {
+                  const card = player.properties[group][index];
 
-              <div className="property-card-slots">
-                {player.properties[group].map((card) => {
-                  const canMoveWild =
-                    player.id === currentPlayer.id &&
-                    card.type === "wild" &&
-                    game.status === "playing" &&
-                    game.turn.phase === "action";
-
-                  const availableColors = card.meta.colors || [];
+                  if (!card) {
+                    return (
+                      <div
+                        className="property-slot property-slot-empty"
+                        key={`${group}-empty-${index}`}
+                      />
+                    );
+                  }
 
                   return (
                     <div
+                      role="button"
+                      tabIndex={0}
                       className={
                         card.type === "wild"
-                          ? "property-slot-filled property-slot-wild"
-                          : "property-slot-filled"
+                          ? "property-slot property-slot-filled property-slot-wild"
+                          : "property-slot property-slot-filled"
                       }
                       key={card.instanceId}
                       style={{
-                        background:
-                          PROPERTY_COLORS[card.meta.activeColor] ||
-                          PROPERTY_COLORS[group],
+                        background: getPropertySlotBackground(card, group),
                       }}
                       title={card.name}
-                    >
-                      {canMoveWild && availableColors.length > 1 && (
-                        <select
-                          value={card.meta.activeColor}
-                          onChange={(event) =>
-                            dispatch({
-                              type: "CHANGE_WILD_COLOR",
-                              payload: {
-                                playerId: currentPlayer.id,
-                                cardInstanceId: card.instanceId,
-                                newColor: event.target.value,
-                              },
-                            })
-                          }
-                        >
-                          {availableColors.map((color) => (
-                            <option value={color} key={color}>
-                              {formatColorName(color)}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
+                      onClick={() => handlePropertyClick(card)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handlePropertyClick(card);
+                        }
+                      }}
+                    />
                   );
                 })}
               </div>
@@ -101,6 +154,65 @@ export function PlayerProperties({ player, currentPlayer, game, dispatch }) {
           );
         })}
       </div>
+
+      {previewCard && (
+        <div
+          className="property-preview-backdrop"
+          onClick={() => setPreviewCard(null)}
+        >
+          <div
+            className="property-preview-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <CardView card={previewCard} language={language} />
+            <button type="button" onClick={() => setPreviewCard(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {colorChoiceCard && (
+        <div
+          className="property-preview-backdrop"
+          onClick={() => setColorChoiceCard(null)}
+        >
+          <section
+            className="property-preview-modal property-color-change-modal"
+            dir={language === "ar" ? "rtl" : "ltr"}
+            role="dialog"
+            aria-modal="true"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2>{colorChoiceCard.name}</h2>
+            <CardView card={colorChoiceCard} language={language} />
+            <div className="property-color-choice-grid">
+              {(colorChoiceCard.meta?.colors || []).map((color) => (
+                <button
+                  type="button"
+                  className="property-color-choice"
+                  key={color}
+                  style={{
+                    "--property-choice-color": PROPERTY_COLORS[color] || "#cbd5e1",
+                  }}
+                  onClick={() => changeWildColor(color)}
+                >
+                  <span>{formatColorName(color)}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="action-choice-cancel"
+              onClick={() => setColorChoiceCard(null)}
+            >
+              Cancel
+            </button>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

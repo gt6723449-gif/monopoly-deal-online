@@ -3,9 +3,6 @@ import { CardView } from "../../components/CardView/CardView";
 import { PROPERTY_SETS } from "../../game/data/propertySets";
 import { calculateRentForGroup } from "../../game/engine/rentEngine";
 import { t } from "../../i18n/translations";
-import { PropertyCardActions } from "./hand-actions/PropertyCardActions";
-import { MoneyActionCardActions } from "./hand-actions/MoneyActionCardActions";
-import { SetModifierActions } from "./hand-actions/SetModifierActions";
 import {
     getCurrentPlayerProperties,
     getDoubleRentCards,
@@ -16,6 +13,19 @@ import {
     getTargetablePlayers,
 } from "./playerHandHelpers";
 
+const PROPERTY_COLORS = {
+    brown: "#8b4513",
+    lightBlue: "#8ed8f8",
+    pink: "#ff5aa5",
+    orange: "#f97316",
+    red: "#dc2626",
+    yellow: "#facc15",
+    green: "#16a34a",
+    darkBlue: "#1d4ed8",
+    railroad: "#111827",
+    utility: "#94a3b8",
+};
+
 function formatColorName(color) {
     return PROPERTY_SETS[color]?.label || color;
 }
@@ -24,6 +34,10 @@ function getPlayableRentColors(player, card) {
     return (card.meta.colors || []).filter(
         (color) => calculateRentForGroup(player, color) > 0
     );
+}
+
+function getCardColor(card, fallbackGroup) {
+    return PROPERTY_COLORS[card.meta?.activeColor] || PROPERTY_COLORS[fallbackGroup] || "#cbd5e1";
 }
 
 function useFittedHandRow(cardCount) {
@@ -87,30 +101,12 @@ export function PlayerHand({
 }) {
     const handRowRef = useFittedHandRow(player.hand.length);
     const [choiceAction, setChoiceAction] = useState(null);
+    const [dragState, setDragState] = useState(null);
     const canAct =
         canUseActions &&
         game.status === "playing" &&
         game.turn.phase === "action" &&
         game.turn.actionsUsed < game.turn.maxActions;
-
-    if (hideCards) {
-        return (
-            <section className="hand-zone">
-                <h3>
-                    {t(language, "bank")}: $
-                    {player.bank.reduce((sum, card) => sum + card.value, 0)}M
-                </h3>
-
-                <div className="table-hand-row hidden-hand-row" ref={handRowRef}>
-                    {player.hand.map((card) => (
-                        <div className="card-back small-card-back" key={card.instanceId}>
-                            DEAL
-                        </div>
-                    ))}
-                </div>
-            </section>
-        );
-    }
 
     function handleColorChange(cardInstanceId, color) {
         setSelectedColors((current) => ({
@@ -125,6 +121,89 @@ export function PlayerHand({
             [cardInstanceId]: value,
         }));
     }
+
+    useEffect(() => {
+        if (!choiceAction) return undefined;
+
+        function handlePlayerTarget(event) {
+            const playerId = event.detail?.playerId;
+
+            if (!playerId || playerId === currentPlayer.id) return;
+
+            if (choiceAction.type === "debtCollector") {
+                playDebtCollector(choiceAction.card, playerId);
+                return;
+            }
+
+            if (choiceAction.type === "rent") {
+                if (choiceAction.playableRentColors.length === 1) {
+                    playRentCard(choiceAction.card, playerId, choiceAction.playableRentColors[0]);
+                    return;
+                }
+
+                handleTargetChange(choiceAction.card.instanceId, playerId);
+                return;
+            }
+
+            if (choiceAction.type === "slyDeal") {
+                const targetProperties = choiceAction.stealableProperties.filter(
+                    (item) => item.playerId === playerId
+                );
+
+                if (targetProperties.length === 1) {
+                    playSlyDeal(choiceAction.card, targetProperties[0].card.instanceId);
+                    return;
+                }
+
+                handleTargetChange(choiceAction.card.instanceId, playerId);
+                return;
+            }
+
+            if (choiceAction.type === "dealBreaker") {
+                const targetSets = choiceAction.stealableFullSets.filter(
+                    (item) => item.playerId === playerId
+                );
+
+                if (targetSets.length === 1) {
+                    playDealBreaker(choiceAction.card, targetSets[0]);
+                    return;
+                }
+
+                handleTargetChange(choiceAction.card.instanceId, playerId);
+                return;
+            }
+
+            if (choiceAction.type === "forcedDeal") {
+                const targetProperties = choiceAction.forcedDealTargets.filter(
+                    (item) => item.playerId === playerId
+                );
+                const offeredCardId =
+                    selectedTargets[`${choiceAction.card.instanceId}_modal_offered`] ||
+                    choiceAction.ownProperties[0]?.card.instanceId;
+
+                if (
+                    choiceAction.ownProperties.length === 1 &&
+                    targetProperties.length === 1 &&
+                    offeredCardId
+                ) {
+                    playForcedDeal(
+                        choiceAction.card,
+                        offeredCardId,
+                        targetProperties[0].card.instanceId
+                    );
+                    return;
+                }
+
+                handleTargetChange(choiceAction.card.instanceId, playerId);
+            }
+        }
+
+        window.addEventListener("monopoly-deal-player-target", handlePlayerTarget);
+
+        return () => {
+            window.removeEventListener("monopoly-deal-player-target", handlePlayerTarget);
+        };
+    }, [choiceAction, currentPlayer.id, selectedTargets]);
 
     function handleBankCard(cardInstanceId) {
         dispatch({
@@ -152,15 +231,18 @@ export function PlayerHand({
         setChoiceAction(null);
     }
 
-    function playRentCard(card) {
+    function playRentCard(card, targetOverride, colorOverride) {
         const playableColors = getPlayableRentColors(currentPlayer, card);
-        const selectedColor = selectedColors[card.instanceId] || playableColors[0];
-        const targetPlayerId = getSelectedTargetId(
-            game,
-            currentPlayer,
-            selectedTargets,
-            card.instanceId
-        );
+        const selectedColor =
+            colorOverride || selectedColors[card.instanceId] || playableColors[0];
+        const targetPlayerId =
+            targetOverride ||
+            getSelectedTargetId(
+                game,
+                currentPlayer,
+                selectedTargets,
+                card.instanceId
+            );
 
         if (!targetPlayerId || !selectedColor) return;
 
@@ -211,13 +293,15 @@ export function PlayerHand({
         });
     }
 
-    function playDebtCollector(card) {
-        const targetPlayerId = getSelectedTargetId(
-            game,
-            currentPlayer,
-            selectedTargets,
-            card.instanceId
-        );
+    function playDebtCollector(card, targetOverride) {
+        const targetPlayerId =
+            targetOverride ||
+            getSelectedTargetId(
+                game,
+                currentPlayer,
+                selectedTargets,
+                card.instanceId
+            );
 
         if (!targetPlayerId) return;
 
@@ -270,6 +354,141 @@ export function PlayerHand({
         setChoiceAction(null);
     }
 
+    function getChoiceTargetId(action = choiceAction) {
+        return selectedTargets[action.card.instanceId];
+    }
+
+    function isWaitingForPlayerTarget(action = choiceAction) {
+        if (!action) return false;
+
+        return (
+            (action.type === "rent" ||
+                action.type === "debtCollector" ||
+                action.type === "slyDeal" ||
+                action.type === "forcedDeal" ||
+                action.type === "dealBreaker") &&
+            !getChoiceTargetId(action)
+        );
+    }
+
+    const isChoosingPlayerTarget = isWaitingForPlayerTarget(choiceAction);
+
+    useEffect(() => {
+        document.body.classList.toggle("is-targeting-player", isChoosingPlayerTarget);
+
+        return () => {
+            document.body.classList.remove("is-targeting-player");
+        };
+    }, [isChoosingPlayerTarget]);
+
+    function getTargetedStealableProperties(action = choiceAction) {
+        const targetId = getChoiceTargetId(action);
+
+        return action.stealableProperties.filter(
+            (item) => !targetId || item.playerId === targetId
+        );
+    }
+
+    function getTargetedForcedDealCards(action = choiceAction) {
+        const targetId = getChoiceTargetId(action);
+
+        return action.forcedDealTargets.filter(
+            (item) => !targetId || item.playerId === targetId
+        );
+    }
+
+    function getTargetedFullSets(action = choiceAction) {
+        const targetId = getChoiceTargetId(action);
+
+        return action.stealableFullSets.filter(
+            (item) => !targetId || item.playerId === targetId
+        );
+    }
+
+    function resolveChoiceActionDefault(action = choiceAction) {
+        if (!action) return false;
+
+        if (action.type === "property") {
+            handlePlayProperty(
+                action.card,
+                selectedColors[action.card.instanceId] || action.availableColors[0]
+            );
+            return true;
+        }
+
+        if (action.type === "rent") {
+            const targetPlayerId =
+                getChoiceTargetId(action) || action.targetablePlayers[0]?.id;
+            const color =
+                selectedColors[action.card.instanceId] ||
+                action.playableRentColors[0];
+
+            if (!targetPlayerId || !color) return false;
+
+            handleTargetChange(action.card.instanceId, targetPlayerId);
+            playRentCard(action.card, targetPlayerId, color);
+            return true;
+        }
+
+        if (action.type === "debtCollector") {
+            const targetPlayerId =
+                getChoiceTargetId(action) || action.targetablePlayers[0]?.id;
+
+            if (!targetPlayerId) return false;
+
+            handleTargetChange(action.card.instanceId, targetPlayerId);
+            playDebtCollector(action.card, targetPlayerId);
+            return true;
+        }
+
+        if (action.type === "slyDeal") {
+            const firstTarget = getTargetedStealableProperties(action)[0];
+
+            if (!firstTarget) return false;
+
+            playSlyDeal(action.card, firstTarget.card.instanceId);
+            return true;
+        }
+
+        if (action.type === "dealBreaker") {
+            const firstSet = getTargetedFullSets(action)[0];
+
+            if (!firstSet) return false;
+
+            playDealBreaker(action.card, firstSet);
+            return true;
+        }
+
+        if (action.type === "forcedDeal") {
+            const offeredCardId = action.ownProperties[0]?.card.instanceId;
+            const targetCardId = getTargetedForcedDealCards(action)[0]?.card.instanceId;
+
+            if (!offeredCardId || !targetCardId) return false;
+
+            playForcedDeal(action.card, offeredCardId, targetCardId);
+            return true;
+        }
+
+        return false;
+    }
+
+    useEffect(() => {
+        if (!choiceAction) return undefined;
+
+        function handleTurnExpire(event) {
+            if (event.detail?.playerId !== currentPlayer.id) return;
+            if (!resolveChoiceActionDefault(choiceAction)) return;
+
+            event.preventDefault();
+        }
+
+        window.addEventListener("monopoly-deal-turn-expire", handleTurnExpire);
+
+        return () => {
+            window.removeEventListener("monopoly-deal-turn-expire", handleTurnExpire);
+        };
+    }, [choiceAction, currentPlayer.id, selectedColors, selectedTargets]);
+
     function handlePlaySetModifier(card) {
         const targets = getModifierTargets(currentPlayer, card);
         const selectedGroup = selectedTargets[card.instanceId] || targets[0]?.group;
@@ -286,13 +505,184 @@ export function PlayerHand({
         });
     }
 
+    function getDropZoneFromPoint(clientX, clientY) {
+        const target = document.elementFromPoint(clientX, clientY);
+        if (!target) return null;
+
+        if (target.closest(".bottom-bank-card, .hand-zone h3")) return "bank";
+        if (target.closest(".table-zone")) return "property";
+        if (target.closest(".table-center")) return "table";
+
+        return null;
+    }
+
+    function playCardFromDrop(card, zone) {
+        if (!canAct || !zone) return;
+
+        const isProperty = card.type === "property" || card.type === "wild";
+        const propertyColors = card.meta.colors || [];
+        const isMultiColorProperty = isProperty && propertyColors.length > 1;
+        const targetablePlayers = getTargetablePlayers(game, currentPlayer);
+        const requiresTargetSelection = targetablePlayers.length > 1;
+
+        if (zone === "bank") {
+            handleBankCard(card.instanceId);
+            return;
+        }
+
+        if (zone === "property") {
+            if (isProperty && !isMultiColorProperty) {
+                handlePlayProperty(card);
+                return;
+            }
+
+            if (isMultiColorProperty) {
+                setChoiceAction({
+                    type: "property",
+                    card,
+                    availableColors: propertyColors,
+                });
+                return;
+            }
+
+            if (
+                card.type === "action" &&
+                (card.meta.actionType === "house" || card.meta.actionType === "hotel")
+            ) {
+                handlePlaySetModifier(card);
+            }
+
+            return;
+        }
+
+        if (zone !== "table") return;
+
+        if (card.type === "money") {
+            handleBankCard(card.instanceId);
+            return;
+        }
+
+        if (card.type === "rent") {
+            setChoiceAction({
+                type: "rent",
+                card,
+                targetablePlayers,
+                requiresTargetSelection,
+                playableRentColors: getPlayableRentColors(currentPlayer, card),
+            });
+            return;
+        }
+
+        if (card.type !== "action") return;
+
+        if (
+            card.meta.actionType === "birthday" ||
+            card.meta.actionType === "passGo"
+        ) {
+            handlePlayMoneyActionCard(card);
+            return;
+        }
+
+        if (card.meta.actionType === "debtCollector") {
+            setChoiceAction({
+                type: "debtCollector",
+                card,
+                targetablePlayers,
+                requiresTargetSelection,
+            });
+            return;
+        }
+
+        if (card.meta.actionType === "slyDeal") {
+            setChoiceAction({
+                type: "slyDeal",
+                card,
+                stealableProperties: getStealableProperties(game, currentPlayer),
+            });
+            return;
+        }
+
+        if (card.meta.actionType === "dealBreaker") {
+            setChoiceAction({
+                type: "dealBreaker",
+                card,
+                stealableFullSets: getStealableFullSets(game, currentPlayer),
+            });
+            return;
+        }
+
+        if (card.meta.actionType === "forcedDeal") {
+            setChoiceAction({
+                type: "forcedDeal",
+                card,
+                ownProperties: getCurrentPlayerProperties(currentPlayer),
+                forcedDealTargets: getStealableProperties(game, currentPlayer),
+            });
+        }
+    }
+
+    function handleCardPointerDown(card, event) {
+        if (!canAct || player.id !== currentPlayer.id) return;
+
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        setDragState({
+            cardId: card.instanceId,
+            startX: event.clientX,
+            startY: event.clientY,
+            x: 0,
+            y: 0,
+            active: false,
+        });
+    }
+
+    function handleCardPointerMove(card, event) {
+        setDragState((current) => {
+            if (!current || current.cardId !== card.instanceId) return current;
+
+            const x = event.clientX - current.startX;
+            const y = event.clientY - current.startY;
+
+            return {
+                ...current,
+                x,
+                y,
+                active: current.active || Math.abs(x) + Math.abs(y) > 8,
+            };
+        });
+    }
+
+    function handleCardRelease(card, event) {
+        const clientX = event.clientX ?? event.changedTouches?.[0]?.clientX;
+        const clientY = event.clientY ?? event.changedTouches?.[0]?.clientY;
+        const wasDragging =
+            dragState?.cardId === card.instanceId && dragState.active;
+
+        setDragState(null);
+
+        if (typeof clientX !== "number" || typeof clientY !== "number") return;
+        if (!wasDragging && event.type !== "dragend") return;
+
+        window.requestAnimationFrame(() => {
+            playCardFromDrop(card, getDropZoneFromPoint(clientX, clientY));
+        });
+    }
+
+    if (hideCards) {
+        return (
+            <section className="hand-zone">
+                <div className="table-hand-row hidden-hand-row" ref={handRowRef}>
+                    {player.hand.map((card) => (
+                        <div className="card-back small-card-back" key={card.instanceId}>
+                            DEAL
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+    }
+
     return (
         <section className="hand-zone">
-            <h3>
-                {t(language, "bank")}: $
-                {player.bank.reduce((sum, card) => sum + card.value, 0)}M
-            </h3>
-
             <div className="table-hand-row" ref={handRowRef}>
                 {player.hand.map((card) => {
                     const isCurrentPlayer = player.id === currentPlayer.id;
@@ -348,164 +738,40 @@ export function PlayerHand({
                         : [];
 
                     return (
-                        <CardView card={card} key={card.instanceId} language={language}>
-                            {isCurrentPlayer && (
-                                <div className="card-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBankCard(card.instanceId)}
-                                        disabled={!canAct}
-                                    >
-                                        {t(language, "bankCard")}
-                                    </button>
-
-                                    {isProperty && !isMultiColorProperty && (
-                                        <PropertyCardActions
-                                            card={card}
-                                            canAct={canAct}
-                                            selectedColors={selectedColors}
-                                            onColorChange={handleColorChange}
-                                            onPlayProperty={handlePlayProperty}
-                                            language={language}
-                                        />
-                                    )}
-
-                                    {isMultiColorProperty && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "property",
-                                                    card,
-                                                    availableColors: propertyColors,
-                                                })
-                                            }
-                                            disabled={!canAct}
-                                        >
-                                            {t(language, "playProperty")}
-                                        </button>
-                                    )}
-
-                                    {isRent && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "rent",
-                                                    card,
-                                                    targetablePlayers,
-                                                    requiresTargetSelection,
-                                                    playableRentColors,
-                                                })
-                                            }
-                                            disabled={!canAct || playableRentColors.length === 0}
-                                        >
-                                            {t(language, "playRent")}
-                                        </button>
-                                    )}
-
-                                    {isDebtCollector && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "debtCollector",
-                                                    card,
-                                                    targetablePlayers,
-                                                    requiresTargetSelection,
-                                                })
-                                            }
-                                            disabled={!canAct || targetablePlayers.length === 0}
-                                        >
-                                            {t(language, "playAction")}
-                                        </button>
-                                    )}
-
-                                    {isMoneyAction && (
-                                        <MoneyActionCardActions
-                                            card={card}
-                                            canAct={canAct}
-                                            requiresTargetSelection={false}
-                                            targetablePlayers={targetablePlayers}
-                                            selectedTargetId={selectedTargetId}
-                                            onTargetChange={handleTargetChange}
-                                            onPlayMoneyAction={handlePlayMoneyActionCard}
-                                            language={language}
-                                        />
-                                    )}
-
-                                    {isSlyDeal && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "slyDeal",
-                                                    card,
-                                                    stealableProperties,
-                                                })
-                                            }
-                                            disabled={!canAct || stealableProperties.length === 0}
-                                        >
-                                            {t(language, "playSlyDeal")}
-                                        </button>
-                                    )}
-
-                                    {isDealBreaker && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "dealBreaker",
-                                                    card,
-                                                    stealableFullSets,
-                                                })
-                                            }
-                                            disabled={!canAct || stealableFullSets.length === 0}
-                                        >
-                                            {t(language, "playDealBreaker")}
-                                        </button>
-                                    )}
-
-                                    {isForcedDeal && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setChoiceAction({
-                                                    type: "forcedDeal",
-                                                    card,
-                                                    ownProperties,
-                                                    forcedDealTargets,
-                                                })
-                                            }
-                                            disabled={
-                                                !canAct ||
-                                                ownProperties.length === 0 ||
-                                                forcedDealTargets.length === 0
-                                            }
-                                        >
-                                            {t(language, "playForcedDeal")}
-                                        </button>
-                                    )}
-
-                                    {isSetModifier && (
-                                        <SetModifierActions
-                                            card={card}
-                                            canAct={canAct}
-                                            modifierTargets={modifierTargets}
-                                            selectedTargets={selectedTargets}
-                                            onTargetChange={handleTargetChange}
-                                            onPlaySetModifier={handlePlaySetModifier}
-                                            language={language}
-                                        />
-                                    )}
-                                </div>
-                            )}
-                        </CardView>
+                        <div
+                            className={[
+                                "draggable-card-shell",
+                                dragState?.cardId === card.instanceId && dragState.active
+                                    ? "is-dragging"
+                                    : "",
+                            ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            draggable={isCurrentPlayer && canAct}
+                            key={card.instanceId}
+                            style={
+                                dragState?.cardId === card.instanceId
+                                    ? {
+                                        "--drag-x": `${dragState.x}px`,
+                                        "--drag-y": `${dragState.y}px`,
+                                    }
+                                    : undefined
+                            }
+                            onDragEnd={(event) => handleCardRelease(card, event)}
+                            onPointerDown={(event) => handleCardPointerDown(card, event)}
+                            onPointerMove={(event) => handleCardPointerMove(card, event)}
+                            onPointerUp={(event) => handleCardRelease(card, event)}
+                            onPointerCancel={() => setDragState(null)}
+                        >
+                            <CardView card={card} language={language} />
+                        </div>
                     );
                 })}
             </div>
 
-            {choiceAction && (
+            {isChoosingPlayerTarget && <div className="player-target-overlay" />}
+
+            {choiceAction && !isChoosingPlayerTarget && (
                 <div className="action-choice-backdrop">
                     <section
                         className="action-choice-modal"
@@ -517,145 +783,82 @@ export function PlayerHand({
 
                         {choiceAction.type === "property" && (
                             <div className="action-choice-form">
-                                <label>
-                                    {t(language, "property")}
-                                    <select
-                                        value={
-                                            selectedColors[
-                                                choiceAction.card.instanceId
-                                            ] || choiceAction.availableColors[0]
-                                        }
-                                        onChange={(event) =>
-                                            handleColorChange(
-                                                choiceAction.card.instanceId,
-                                                event.target.value
-                                            )
-                                        }
-                                    >
-                                        {choiceAction.availableColors.map((color) => (
-                                            <option value={color} key={color}>
-                                                {formatColorName(color)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        handlePlayProperty(
-                                            choiceAction.card,
-                                            selectedColors[
-                                                choiceAction.card.instanceId
-                                            ] || choiceAction.availableColors[0]
-                                        )
-                                    }
-                                >
-                                    {t(language, "playProperty")}
-                                </button>
+                                <div className="property-color-choice-grid">
+                                    {choiceAction.availableColors.map((color) => (
+                                        <button
+                                            type="button"
+                                            className="property-color-choice"
+                                            key={color}
+                                            style={{
+                                                "--property-choice-color":
+                                                    PROPERTY_COLORS[color] || "#cbd5e1",
+                                            }}
+                                            onClick={() =>
+                                                handlePlayProperty(choiceAction.card, color)
+                                            }
+                                        >
+                                            <span>{formatColorName(color)}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
                         {choiceAction.type === "debtCollector" && (
                             <div className="action-choice-form">
-                                {choiceAction.requiresTargetSelection && (
-                                    <label>
-                                        {t(language, "target")}
-                                        <select
-                                            value={getSelectedTargetId(
-                                                game,
-                                                currentPlayer,
-                                                selectedTargets,
-                                                choiceAction.card.instanceId
-                                            )}
-                                            onChange={(event) =>
-                                                handleTargetChange(
-                                                    choiceAction.card.instanceId,
-                                                    event.target.value
-                                                )
-                                            }
-                                        >
-                                            {choiceAction.targetablePlayers.map(
-                                                (targetPlayer) => (
-                                                    <option
-                                                        value={targetPlayer.id}
-                                                        key={targetPlayer.id}
-                                                    >
-                                                        {targetPlayer.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </label>
+                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                    <p className="choice-hint">
+                                        {t(language, "target")}: {t(language, "playAction")}
+                                    </p>
                                 )}
 
-                                <button
-                                    type="button"
-                                    onClick={() => playDebtCollector(choiceAction.card)}
-                                >
-                                    {t(language, "playAction")}
-                                </button>
+                                {selectedTargets[choiceAction.card.instanceId] && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            playDebtCollector(
+                                                choiceAction.card,
+                                                selectedTargets[choiceAction.card.instanceId]
+                                            )
+                                        }
+                                    >
+                                        {t(language, "playAction")}
+                                    </button>
+                                )}
                             </div>
                         )}
 
                         {choiceAction.type === "rent" && (
                             <div className="action-choice-form">
-                                {choiceAction.requiresTargetSelection && (
-                                    <label>
-                                        {t(language, "target")}
-                                        <select
-                                            value={getSelectedTargetId(
-                                                game,
-                                                currentPlayer,
-                                                selectedTargets,
-                                                choiceAction.card.instanceId
-                                            )}
-                                            onChange={(event) =>
-                                                handleTargetChange(
-                                                    choiceAction.card.instanceId,
-                                                    event.target.value
-                                                )
-                                            }
-                                        >
-                                            {choiceAction.targetablePlayers.map(
-                                                (targetPlayer) => (
-                                                    <option
-                                                        value={targetPlayer.id}
-                                                        key={targetPlayer.id}
-                                                    >
-                                                        {targetPlayer.name}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </label>
+                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                    <p className="choice-hint">
+                                        {t(language, "target")}: {t(language, "playRent")}
+                                    </p>
                                 )}
 
-                                {choiceAction.playableRentColors.length > 1 && (
-                                    <label>
-                                        {t(language, "rent")}
-                                        <select
-                                            value={
-                                                selectedColors[
-                                                    choiceAction.card.instanceId
-                                                ] || choiceAction.playableRentColors[0]
-                                            }
-                                            onChange={(event) =>
-                                                handleColorChange(
-                                                    choiceAction.card.instanceId,
-                                                    event.target.value
-                                                )
-                                            }
-                                        >
-                                            {choiceAction.playableRentColors.map(
-                                                (color) => (
-                                                    <option value={color} key={color}>
-                                                        {formatColorName(color)}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                    </label>
+                                {selectedTargets[choiceAction.card.instanceId] && (
+                                    <div className="property-color-choice-grid">
+                                        {choiceAction.playableRentColors.map((color) => (
+                                            <button
+                                                type="button"
+                                                className="property-color-choice"
+                                                key={color}
+                                                style={{
+                                                    "--property-choice-color":
+                                                        PROPERTY_COLORS[color] || "#cbd5e1",
+                                                }}
+                                                onClick={() =>
+                                                    playRentCard(
+                                                        choiceAction.card,
+                                                        selectedTargets[choiceAction.card.instanceId],
+                                                        color
+                                                    )
+                                                }
+                                            >
+                                                <span>{formatColorName(color)}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
 
                                 {getDoubleRentCards(currentPlayer).map(
@@ -683,127 +886,156 @@ export function PlayerHand({
                                     )
                                 )}
 
-                                <button
-                                    type="button"
-                                    onClick={() => playRentCard(choiceAction.card)}
-                                    disabled={
-                                        choiceAction.playableRentColors.length === 0
-                                    }
-                                >
-                                    {t(language, "playRent")}
-                                </button>
+                                {choiceAction.playableRentColors.length === 0 && (
+                                    <p className="choice-hint">{t(language, "rent")}: 0</p>
+                                )}
                             </div>
                         )}
 
                         {choiceAction.type === "slyDeal" && (
                             <div className="action-choice-list">
-                                {choiceAction.stealableProperties.map((item) => (
-                                    <button
-                                        type="button"
-                                        key={item.card.instanceId}
-                                        onClick={() =>
-                                            playSlyDeal(
-                                                choiceAction.card,
-                                                item.card.instanceId
-                                            )
-                                        }
-                                    >
-                                        {t(language, "steal")} {item.card.name}{" "}
-                                        {t(language, "from")} {item.playerName}
-                                    </button>
-                                ))}
+                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                    <p className="choice-hint">
+                                        {t(language, "target")}: {t(language, "playSlyDeal")}
+                                    </p>
+                                )}
+
+                                {selectedTargets[choiceAction.card.instanceId] &&
+                                    getTargetedStealableProperties(choiceAction).map((item) => (
+                                        <button
+                                            type="button"
+                                            className="property-pick-card"
+                                            key={item.card.instanceId}
+                                            style={{
+                                                "--property-choice-color": getCardColor(
+                                                    item.card,
+                                                    item.group
+                                                ),
+                                            }}
+                                            onClick={() =>
+                                                playSlyDeal(
+                                                    choiceAction.card,
+                                                    item.card.instanceId
+                                                )
+                                            }
+                                        >
+                                            <strong>{item.card.name}</strong>
+                                            <span>{item.playerName}</span>
+                                        </button>
+                                    ))}
                             </div>
                         )}
 
                         {choiceAction.type === "dealBreaker" && (
                             <div className="action-choice-list">
-                                {choiceAction.stealableFullSets.map((item) => (
-                                    <button
-                                        type="button"
-                                        key={item.label}
-                                        onClick={() =>
-                                            playDealBreaker(choiceAction.card, item)
-                                        }
-                                    >
-                                        {t(language, "steal")} {item.label}
-                                    </button>
-                                ))}
+                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                    <p className="choice-hint">
+                                        {t(language, "target")}: {t(language, "playDealBreaker")}
+                                    </p>
+                                )}
+
+                                {selectedTargets[choiceAction.card.instanceId] &&
+                                    getTargetedFullSets(choiceAction).map((item) => (
+                                        <button
+                                            type="button"
+                                            className="property-pick-card"
+                                            key={item.label}
+                                            style={{
+                                                "--property-choice-color":
+                                                    PROPERTY_COLORS[item.group] || "#cbd5e1",
+                                            }}
+                                            onClick={() =>
+                                                playDealBreaker(choiceAction.card, item)
+                                            }
+                                        >
+                                            <strong>{item.label}</strong>
+                                            <span>{t(language, "steal")}</span>
+                                        </button>
+                                    ))}
                             </div>
                         )}
 
                         {choiceAction.type === "forcedDeal" && (
                             <div className="action-choice-form">
-                                <label>
-                                    {t(language, "give")}
-                                    <select
-                                        value={
+                                <strong>{t(language, "give")}</strong>
+                                <div className="action-choice-list">
+                                    {choiceAction.ownProperties.map((item) => {
+                                        const selectedOfferedId =
                                             selectedTargets[
-                                                `${choiceAction.card.instanceId}_modal_offered`
-                                            ] || choiceAction.ownProperties[0]?.card.instanceId
-                                        }
-                                        onChange={(event) =>
-                                            handleTargetChange(
-                                                `${choiceAction.card.instanceId}_modal_offered`,
-                                                event.target.value
-                                            )
-                                        }
-                                    >
-                                        {choiceAction.ownProperties.map((item) => (
-                                            <option
-                                                value={item.card.instanceId}
-                                                key={item.card.instanceId}
-                                            >
-                                                {item.card.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                                            `${choiceAction.card.instanceId}_modal_offered`
+                                            ] || choiceAction.ownProperties[0]?.card.instanceId;
 
-                                <label>
-                                    {t(language, "take")}
-                                    <select
-                                        value={
-                                            selectedTargets[
-                                                `${choiceAction.card.instanceId}_modal_target`
-                                            ] || choiceAction.forcedDealTargets[0]?.card.instanceId
-                                        }
-                                        onChange={(event) =>
-                                            handleTargetChange(
-                                                `${choiceAction.card.instanceId}_modal_target`,
-                                                event.target.value
-                                            )
-                                        }
-                                    >
-                                        {choiceAction.forcedDealTargets.map((item) => (
-                                            <option
-                                                value={item.card.instanceId}
+                                        return (
+                                            <button
+                                                type="button"
+                                                className={
+                                                    item.card.instanceId === selectedOfferedId
+                                                        ? "property-pick-card selected-pick-card"
+                                                        : "property-pick-card"
+                                                }
                                                 key={item.card.instanceId}
+                                                style={{
+                                                    "--property-choice-color": getCardColor(
+                                                        item.card,
+                                                        item.group
+                                                    ),
+                                                }}
+                                                onClick={() =>
+                                                    handleTargetChange(
+                                                        `${choiceAction.card.instanceId}_modal_offered`,
+                                                        item.card.instanceId
+                                                    )
+                                                }
                                             >
-                                                {item.card.name} {t(language, "from")}{" "}
-                                                {item.playerName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                                                <strong>{item.card.name}</strong>
+                                                <span>{t(language, "give")}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        playForcedDeal(
-                                            choiceAction.card,
-                                            selectedTargets[
-                                                `${choiceAction.card.instanceId}_modal_offered`
-                                            ] || choiceAction.ownProperties[0]?.card.instanceId,
-                                            selectedTargets[
-                                                `${choiceAction.card.instanceId}_modal_target`
-                                            ] ||
-                                                choiceAction.forcedDealTargets[0]?.card
-                                                    .instanceId
-                                        )
-                                    }
-                                >
-                                    {t(language, "playForcedDeal")}
-                                </button>
+                                {!selectedTargets[choiceAction.card.instanceId] && (
+                                    <p className="choice-hint">
+                                        {t(language, "target")}: {t(language, "playForcedDeal")}
+                                    </p>
+                                )}
+
+                                {selectedTargets[choiceAction.card.instanceId] && (
+                                    <>
+                                        <strong>{t(language, "take")}</strong>
+                                        <div className="action-choice-list">
+                                            {getTargetedForcedDealCards(choiceAction).map(
+                                                (item) => (
+                                                    <button
+                                                        type="button"
+                                                        className="property-pick-card"
+                                                        key={item.card.instanceId}
+                                                        style={{
+                                                            "--property-choice-color": getCardColor(
+                                                                item.card,
+                                                                item.group
+                                                            ),
+                                                        }}
+                                                        onClick={() =>
+                                                            playForcedDeal(
+                                                                choiceAction.card,
+                                                                selectedTargets[
+                                                                `${choiceAction.card.instanceId}_modal_offered`
+                                                                ] ||
+                                                                choiceAction.ownProperties[0]?.card
+                                                                    .instanceId,
+                                                                item.card.instanceId
+                                                            )
+                                                        }
+                                                    >
+                                                        <strong>{item.card.name}</strong>
+                                                        <span>{item.playerName}</span>
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
 

@@ -1,5 +1,4 @@
 import { CardView } from "../../components/CardView/CardView";
-import { t } from "../../i18n/translations";
 import { PlayerArea } from "./PlayerArea";
 
 export function GameTable({
@@ -68,12 +67,10 @@ export function GameTable({
       {renderSeat("left", seats.left)}
 
       <div className="table-center">
-        {lastDiscardedCard ? (
+        {lastDiscardedCard && (
           <div className="table-played-card">
             <CardView card={lastDiscardedCard} language={language} />
           </div>
-        ) : (
-          <div className="empty-table-label">{t(language, "table")}</div>
         )}
       </div>
 

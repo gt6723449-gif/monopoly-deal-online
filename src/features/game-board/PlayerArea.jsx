@@ -19,26 +19,52 @@ export function PlayerArea({
 }) {
   const completedSetCount = getCompletedPropertySetCount(player);
   const canUseHandActions = isHumanPlayer && isActivePlayer;
+  const bankTotal = player.bank.reduce((sum, card) => sum + card.value, 0);
+
+  function handlePlayerNameClick() {
+    window.dispatchEvent(
+      new CustomEvent("monopoly-deal-player-target", {
+        detail: {
+          playerId: player.id,
+        },
+      })
+    );
+  }
 
   return (
     <section
-      className={
-        isActivePlayer ? "player-area current-player-area" : "player-area"
-      }
+      className={[
+        "player-area",
+        isActivePlayer ? "current-player-area" : "",
+        !isHumanPlayer ? "compact-player-area" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <header className="player-area-header">
         <div className="player-name-controls">
           <div
+            role="button"
+            tabIndex={0}
             className={
               isActivePlayer ? "player-name-timer active" : "player-name-timer"
             }
+            onClick={handlePlayerNameClick}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                handlePlayerNameClick();
+              }
+            }}
           >
-            {isActivePlayer && (
+            {isActivePlayer && !isHumanPlayer && (
               <TurnTimer
                 game={game}
                 player={player}
                 dispatch={dispatch}
-                isRunning={isHumanPlayer}
+                isRunning
+                durationSeconds={2}
+                shouldDispatchOnExpire={false}
               />
             )}
 
@@ -67,9 +93,13 @@ export function PlayerArea({
         </div>
 
         <div className="player-header-actions">
-          <span>
+          <span className="player-sets-count">
             {t(language, "sets")} {completedSetCount}/3
           </span>
+          <div className="player-bank-card">
+            <strong>${bankTotal}M</strong>
+            <div className="player-bank-icon" />
+          </div>
         </div>
       </header>
 
@@ -94,6 +124,7 @@ export function PlayerArea({
             currentPlayer={currentPlayer}
             game={game}
             dispatch={dispatch}
+            language={language}
           />
         </>
       )}
@@ -105,6 +136,7 @@ export function PlayerArea({
             currentPlayer={currentPlayer}
             game={game}
             dispatch={dispatch}
+            language={language}
           />
 
           <PlayerHand
