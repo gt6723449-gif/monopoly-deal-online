@@ -932,7 +932,7 @@ export function PlayerHand({
                                 {getDoubleRentCards(currentPlayer).map(
                                     (doubleRentCard) => (
                                         <label
-                                            className="checkbox-row"
+                                            className="checkbox-row double-rent-option"
                                             key={doubleRentCard.instanceId}
                                         >
                                             <input
@@ -949,7 +949,18 @@ export function PlayerHand({
                                                     )
                                                 }
                                             />
-                                            {t(language, "use")} {doubleRentCard.name}
+                                            <span>
+                                                <strong>
+                                                    {t(language, "use")}{" "}
+                                                    {t(language, `cardName.${doubleRentCard.id}`)}
+                                                </strong>
+                                                <small>
+                                                    {t(
+                                                        language,
+                                                        `cardDescription.${doubleRentCard.id}`
+                                                    )}
+                                                </small>
+                                            </span>
                                         </label>
                                     )
                                 )}

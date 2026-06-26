@@ -96,6 +96,7 @@ export function WinnerClaimPage({
 
     const data = {
       name: fullName.trim(),
+      fullName: fullName.trim(),
       country: getCountryName(selectedCountry),
       phone: parsedPhoneNumber.number,
       amount,

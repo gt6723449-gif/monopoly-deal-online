@@ -1825,6 +1825,25 @@ select {
     width: auto;
 }
 
+.double-rent-option {
+    align-items: flex-start;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.84);
+    border: 1px solid rgba(248, 250, 252, 0.14);
+    border-radius: 8px;
+}
+
+.double-rent-option span {
+    display: grid;
+    gap: 2px;
+}
+
+.double-rent-option small {
+    color: #d1d5db;
+    font-size: 0.72rem;
+    line-height: 1.25;
+}
+
 /* DESKTOP */
 
 @media (min-width: 900px) {
