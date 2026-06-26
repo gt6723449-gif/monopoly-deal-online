@@ -94,18 +94,21 @@ export function WinnerClaimPage({
     setFormError("");
     setIsSaving(true);
 
-    const data = {
-      name: fullName.trim(),
+    const claim = {
       fullName: fullName.trim(),
       country: getCountryName(selectedCountry),
       phone: parsedPhoneNumber.number,
       amount,
-      sheetRow: [
-        fullName.trim(),
-        getCountryName(selectedCountry),
-        parsedPhoneNumber.number,
-        amount,
-      ],
+    };
+
+    const data = {
+      claim,
+      name: claim.fullName,
+      fullName: claim.fullName,
+      country: claim.country,
+      phone: claim.phone,
+      amount: claim.amount,
+      sheetRow: [claim.fullName, claim.country, claim.phone, claim.amount],
     };
 
     const body = new URLSearchParams({
