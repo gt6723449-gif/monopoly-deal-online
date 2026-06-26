@@ -10,7 +10,6 @@ const BOT_NAMES = {
 export function GameSetup({ dispatch, language, onStart }) {
   const botNames = BOT_NAMES[language] || BOT_NAMES.en;
   const [playerCount, setPlayerCount] = useState(2);
-  const [playMode, setPlayMode] = useState("bots");
   const [showRules, setShowRules] = useState(false);
 
   function handleStartGame(event) {
@@ -18,7 +17,7 @@ export function GameSetup({ dispatch, language, onStart }) {
 
     const activePlayerNames = Array.from({ length: playerCount }).map(
       (_, index) => {
-        if (playMode === "bots" && index > 0) {
+        if (index > 0) {
           return botNames[index - 1];
         }
 
@@ -26,16 +25,14 @@ export function GameSetup({ dispatch, language, onStart }) {
       }
     );
     const botPlayerIds =
-      playMode === "bots"
-        ? activePlayerNames.slice(1).map((_, index) => `player_${index + 2}`)
-        : [];
+      activePlayerNames.slice(1).map((_, index) => `player_${index + 2}`);
 
     dispatch({
       type: "START_NEW_GAME",
       payload: {
         playerNames: activePlayerNames,
         botPlayerIds,
-        mode: playMode,
+        mode: "bots",
       },
     });
 
@@ -79,31 +76,6 @@ export function GameSetup({ dispatch, language, onStart }) {
                   <span>{t(language, "players")}</span>
                 </button>
               ))}
-            </div>
-          </fieldset>
-
-          <fieldset className="setup-choice-group">
-            <legend>{t(language, "gameMode")}</legend>
-            <div className="setup-choice-grid">
-              <button
-                type="button"
-                className={
-                  playMode === "bots"
-                    ? "setup-choice-card selected-setup-choice"
-                    : "setup-choice-card"
-                }
-                onClick={() => setPlayMode("bots")}
-              >
-                {t(language, "playWithBots")}
-              </button>
-
-              <button
-                type="button"
-                className="setup-choice-card"
-                disabled
-              >
-                {t(language, "playOnlinePlayers")}
-              </button>
             </div>
           </fieldset>
 
