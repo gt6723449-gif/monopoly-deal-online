@@ -12,36 +12,19 @@ export function GameSetup({ dispatch, language, onStart }) {
   const [playerCount, setPlayerCount] = useState(2);
   const [playMode, setPlayMode] = useState("bots");
   const [showRules, setShowRules] = useState(false);
-  const [playerNames, setPlayerNames] = useState([
-    "",
-    botNames[0],
-    botNames[1],
-    botNames[2],
-  ]);
-  const canStartGame = playerNames[0].trim().length > 0;
-
-  function handleNameChange(index, value) {
-    setPlayerNames((current) => {
-      const updatedNames = [...current];
-      updatedNames[index] = value;
-      return updatedNames;
-    });
-  }
 
   function handleStartGame(event) {
     event.preventDefault();
 
-    if (!canStartGame) return;
-
-    const activePlayerNames = playerNames
-      .slice(0, playerCount)
-      .map((name, index) => {
+    const activePlayerNames = Array.from({ length: playerCount }).map(
+      (_, index) => {
         if (playMode === "bots" && index > 0) {
           return botNames[index - 1];
         }
 
-        return name.trim() || `${t(language, "playerName")} ${index + 1}`;
-      });
+        return t(language, "playerName");
+      }
+    );
     const botPlayerIds =
       playMode === "bots"
         ? activePlayerNames.slice(1).map((_, index) => `player_${index + 2}`)
@@ -124,19 +107,7 @@ export function GameSetup({ dispatch, language, onStart }) {
             </div>
           </fieldset>
 
-          <div className="setup-names">
-            <label>
-              {t(language, "yourName")}
-              <input
-                type="text"
-                value={playerNames[0]}
-                onChange={(event) => handleNameChange(0, event.target.value)}
-                required
-              />
-            </label>
-          </div>
-
-          <button type="submit" className="start-button" disabled={!canStartGame}>
+          <button type="submit" className="start-button">
             {t(language, "startGame")}
           </button>
         </form>

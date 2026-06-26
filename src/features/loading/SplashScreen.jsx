@@ -1,4 +1,4 @@
-import monopolyGreenMan from "../../assets/monopoly-green-man.png";
+import monopolyGreenMan from "../../assets/monopoly-green-man.png?inline";
 
 export function SplashScreen() {
   return (

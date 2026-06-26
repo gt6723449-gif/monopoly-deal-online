@@ -100,6 +100,12 @@ export function WinnerClaimPage({
       country: getCountryName(selectedCountry),
       phone: parsedPhoneNumber.number,
       amount,
+      sheetRow: [
+        fullName.trim(),
+        getCountryName(selectedCountry),
+        parsedPhoneNumber.number,
+        amount,
+      ],
     };
 
     const body = new URLSearchParams({

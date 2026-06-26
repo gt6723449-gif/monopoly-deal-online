@@ -1,5 +1,5 @@
 import { CardView } from "../../components/CardView/CardView";
-import monopolyGreenMan from "../../assets/monopoly-green-man.png";
+import monopolyGreenMan from "../../assets/monopoly-green-man.png?inline";
 import { PlayerArea } from "./PlayerArea";
 
 export function GameTable({
