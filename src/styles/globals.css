@@ -2538,6 +2538,57 @@ select {
     font-weight: 900;
 }
 
+.gift-confirmation-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.gift-confirmation-modal {
+    width: min(92vw, 420px);
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 22px;
+    color: #f8fafc;
+    text-align: center;
+    background: rgba(18, 17, 18, 0.98);
+    border: 2px solid rgba(34, 197, 94, 0.7);
+    border-radius: 14px;
+    box-shadow: 0 18px 0 rgba(0, 0, 0, 0.42);
+}
+
+.gift-confirmation-modal h2,
+.gift-confirmation-modal p {
+    margin: 0;
+}
+
+.gift-confirmation-modal h2 {
+    color: #22c55e;
+    font-size: 1.25rem;
+}
+
+.gift-confirmation-modal p {
+    color: #d1d5db;
+    font-weight: 900;
+    line-height: 1.45;
+}
+
+.gift-confirmation-modal a {
+    width: 100%;
+    padding: 10px 14px;
+    color: white;
+    text-decoration: none;
+    background: #07551f;
+    border: 2px solid #22c55e;
+    border-radius: 8px;
+    font-weight: 1000;
+}
+
 .splash-page {
     min-height: 100svh;
     display: grid;

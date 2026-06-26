@@ -3,6 +3,8 @@ import { parsePhoneNumberFromString } from "libphonenumber-js/max";
 import { COUNTRIES } from "../../data/countries";
 import { t } from "../../i18n/translations";
 
+const CONTACT_URL = "https://www.time4bets504.com/affiliates/?btag=2207742";
+
 function getLocalizedCountryName(country, language) {
   if (typeof Intl === "undefined" || !Intl.DisplayNames) {
     return country.name;
@@ -199,10 +201,6 @@ export function WinnerClaimPage({
 
             {formError && <p className="claim-error">{formError}</p>}
 
-            {saved && (
-              <p className="claim-success">{t(language, "savedSuccessfully")}</p>
-            )}
-
             <button type="submit" disabled={!canSubmit || isSaving || saved}>
               {isSaving ? t(language, "saving") : t(language, "collectGift")}
             </button>
@@ -217,6 +215,25 @@ export function WinnerClaimPage({
           </button>
         )}
       </section>
+
+      {saved && (
+        <div className="gift-confirmation-backdrop" role="presentation">
+          <section
+            className="gift-confirmation-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gift-confirmation-title"
+          >
+            <h2 id="gift-confirmation-title">
+              {t(language, "giftRequestRegistered")}
+            </h2>
+            <p>{t(language, "giftContactWithin24Hours")}</p>
+            <a href={CONTACT_URL} target="_blank" rel="noreferrer">
+              {t(language, "contactUsThroughWebsite")}
+            </a>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
