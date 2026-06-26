@@ -1,17 +1,45 @@
 import { useState } from "react";
+import { parsePhoneNumberFromString } from "libphonenumber-js/max";
+import { COUNTRIES } from "../../data/countries";
 import { t } from "../../i18n/translations";
 
-const COUNTRIES = [
-  { iso: "LB", name: "Lebanon", arName: "لبنان", code: "+961" },
-  { iso: "SA", name: "Saudi Arabia", arName: "السعودية", code: "+966" },
-  { iso: "AE", name: "United Arab Emirates", arName: "الإمارات", code: "+971" },
-  { iso: "KW", name: "Kuwait", arName: "الكويت", code: "+965" },
-  { iso: "QA", name: "Qatar", arName: "قطر", code: "+974" },
-  { iso: "JO", name: "Jordan", arName: "الأردن", code: "+962" },
-  { iso: "EG", name: "Egypt", arName: "مصر", code: "+20" },
-  { iso: "IQ", name: "Iraq", arName: "العراق", code: "+964" },
-  { iso: "TR", name: "Turkey", arName: "تركيا", code: "+90" },
-];
+function getLocalizedCountryName(country, language) {
+  if (typeof Intl === "undefined" || !Intl.DisplayNames) {
+    return country.name;
+  }
+
+  try {
+    return new Intl.DisplayNames([language], { type: "region" }).of(country.iso) || country.name;
+  } catch {
+    return country.name;
+  }
+}
+
+function parseWhatsappNumber(phoneNumber, country) {
+  const trimmedNumber = phoneNumber.trim();
+
+  if (!trimmedNumber) {
+    return null;
+  }
+
+  const normalizedNumber = trimmedNumber.startsWith("+")
+    ? trimmedNumber
+    : `+${country.dialCode}${trimmedNumber.replace(/\D/g, "")}`;
+
+  try {
+    const parsedNumber =
+      parsePhoneNumberFromString(trimmedNumber, country.iso) ||
+      parsePhoneNumberFromString(normalizedNumber);
+
+    return parsedNumber?.isValid() ? parsedNumber : null;
+  } catch {
+    return null;
+  }
+}
+
+function isValidWhatsappNumber(phoneNumber, country) {
+  return Boolean(parseWhatsappNumber(phoneNumber, country));
+}
 
 export function WinnerClaimPage({
   winner,
@@ -21,37 +49,55 @@ export function WinnerClaimPage({
   isHumanWinner = true,
 }) {
   const [selectedCountryIso, setSelectedCountryIso] = useState("LB");
+  const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneError, setPhoneError] = useState(false);
+  const [formError, setFormError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const selectedCountry =
     COUNTRIES.find((country) => country.iso === selectedCountryIso) ||
     COUNTRIES[0];
+  const canSubmit =
+    fullName.trim().length > 0 &&
+    isValidWhatsappNumber(phoneNumber, selectedCountry);
 
   function getCountryName(country) {
-    return language === "ar" ? country.arName : country.name;
+    return getLocalizedCountryName(country, language);
   }
 
   function handlePhoneChange(event) {
-    setPhoneNumber(event.target.value.replace(/[^0-9]/g, ""));
+    setPhoneNumber(event.target.value.replace(/[^\d+\s()-]/g, ""));
+    setFormError("");
+  }
+
+  function handleCountryChange(event) {
+    setSelectedCountryIso(event.target.value);
+    setFormError("");
   }
 
   async function handleCollectGift(event) {
     event.preventDefault();
 
-    if (!phoneNumber.trim()) {
-      setPhoneError(true);
+    if (!fullName.trim()) {
+      setFormError(t(language, "enterFullName"));
       return;
     }
 
-    setPhoneError(false);
+    if (!isValidWhatsappNumber(phoneNumber, selectedCountry)) {
+      setFormError(t(language, "invalidPhone"));
+      return;
+    }
+
+    const parsedPhoneNumber = parseWhatsappNumber(phoneNumber, selectedCountry);
+
+    setFormError("");
     setIsSaving(true);
 
     const data = {
+      name: fullName.trim(),
       country: getCountryName(selectedCountry),
-      phone: `${selectedCountry.code} ${phoneNumber}`,
+      phone: parsedPhoneNumber.number,
       amount,
     };
 
@@ -101,48 +147,59 @@ export function WinnerClaimPage({
 
         {isHumanWinner ? (
           <form onSubmit={handleCollectGift}>
-          <label>
-            {t(language, "country")}
-            <select
-              value={selectedCountryIso}
-              onChange={(event) => setSelectedCountryIso(event.target.value)}
-            >
-              {COUNTRIES.map((country) => (
-                <option value={country.iso} key={country.iso}>
-                  {getCountryName(country)} ({country.code})
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            {t(language, "whatsappPhone")}
-            <div className="phone-row">
-              <span>{selectedCountry.code}</span>
+            <label>
+              {t(language, "fullName")}
               <input
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                placeholder={t(language, "phonePlaceholder")}
-                inputMode="numeric"
+                type="text"
+                value={fullName}
+                onChange={(event) => {
+                  setFullName(event.target.value);
+                  setFormError("");
+                }}
+                placeholder={t(language, "fullName")}
+                autoComplete="name"
+                required
               />
-            </div>
-          </label>
+            </label>
 
-          {phoneError && (
-            <p className="claim-error">{t(language, "enterPhone")}</p>
-          )}
+            <label>
+              {t(language, "country")}
+              <select value={selectedCountryIso} onChange={handleCountryChange}>
+                {COUNTRIES.map((country) => (
+                  <option value={country.iso} key={country.iso}>
+                    {getCountryName(country)} (+{country.dialCode})
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          {saved && (
-            <p className="claim-success">{t(language, "savedSuccessfully")}</p>
-          )}
+            <label>
+              {t(language, "whatsappPhone")}
+              <div className="phone-row">
+                <span>+{selectedCountry.dialCode}</span>
+                <input
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  placeholder={t(language, "phonePlaceholder")}
+                  inputMode="tel"
+                  autoComplete="tel-national"
+                />
+              </div>
+            </label>
 
-          <button type="submit" disabled={isSaving || saved}>
-            {isSaving ? t(language, "saving") : t(language, "collectGift")}
-          </button>
+            {formError && <p className="claim-error">{formError}</p>}
 
-          <button type="button" onClick={onPlayAgain}>
-            {t(language, "playAgain")}
-          </button>
+            {saved && (
+              <p className="claim-success">{t(language, "savedSuccessfully")}</p>
+            )}
+
+            <button type="submit" disabled={!canSubmit || isSaving || saved}>
+              {isSaving ? t(language, "saving") : t(language, "collectGift")}
+            </button>
+
+            <button type="button" onClick={onPlayAgain}>
+              {t(language, "playAgain")}
+            </button>
           </form>
         ) : (
           <button type="button" onClick={onPlayAgain}>

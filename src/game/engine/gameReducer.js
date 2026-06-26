@@ -1224,7 +1224,7 @@ export function gameReducer(state, action) {
                 properties: updatedProperties,
             };
 
-            return {
+            const nextState = {
                 ...state,
                 players: updatedPlayers,
                 log: [
@@ -1235,6 +1235,8 @@ export function gameReducer(state, action) {
                     },
                 ],
             };
+
+            return applyWinCondition(nextState);
         }
 
         case "DECLINE_JUST_SAY_NO": {

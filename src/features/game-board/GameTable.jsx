@@ -1,4 +1,5 @@
 import { CardView } from "../../components/CardView/CardView";
+import monopolyGreenMan from "../../assets/monopoly-green-man.png";
 import { PlayerArea } from "./PlayerArea";
 
 export function GameTable({
@@ -31,7 +32,9 @@ export function GameTable({
           bottom: humanPlayer,
         };
 
-  const lastDiscardedCard = game.discardPile.at(-1);
+  const lastPlayedTableCard = game.discardPile
+    .filter((card) => card.type === "action" || card.type === "rent")
+    .at(-1);
 
   function renderSeat(position, player) {
     if (!player) return null;
@@ -67,9 +70,16 @@ export function GameTable({
       {renderSeat("left", seats.left)}
 
       <div className="table-center">
-        {lastDiscardedCard && (
+        <img
+          className="table-center-mascot"
+          src={monopolyGreenMan}
+          alt=""
+          aria-hidden="true"
+        />
+
+        {lastPlayedTableCard && (
           <div className="table-played-card">
-            <CardView card={lastDiscardedCard} language={language} />
+            <CardView card={lastPlayedTableCard} language={language} />
           </div>
         )}
       </div>

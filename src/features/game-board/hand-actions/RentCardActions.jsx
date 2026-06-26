@@ -1,10 +1,6 @@
-import { PROPERTY_SETS } from "../../../game/data/propertySets";
+import { getPropertyColorName } from "../../../game/data/propertyColorNames";
 import { t } from "../../../i18n/translations";
 import { getDoubleRentCards } from "../playerHandHelpers";
-
-function formatColorName(color) {
-  return PROPERTY_SETS[color]?.label || color;
-}
 
 export function RentCardActions({
   card,
@@ -51,7 +47,7 @@ export function RentCardActions({
         >
           {availableColors.map((color) => (
             <option value={color} key={color}>
-              {formatColorName(color)}
+              {getPropertyColorName(color, language)}
             </option>
           ))}
         </select>

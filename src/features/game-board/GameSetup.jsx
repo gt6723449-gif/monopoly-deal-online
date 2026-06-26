@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { t } from "../../i18n/translations";
+import { RulesModal } from "./RulesModal";
 
 const BOT_NAMES = {
   en: ["Omar", "Sara", "Layan"],
@@ -10,6 +11,7 @@ export function GameSetup({ dispatch, language, onStart }) {
   const botNames = BOT_NAMES[language] || BOT_NAMES.en;
   const [playerCount, setPlayerCount] = useState(2);
   const [playMode, setPlayMode] = useState("bots");
+  const [showRules, setShowRules] = useState(false);
   const [playerNames, setPlayerNames] = useState([
     "",
     botNames[0],
@@ -66,6 +68,14 @@ export function GameSetup({ dispatch, language, onStart }) {
         </div>
 
         <p className="start-subtitle">{t(language, "onlineCardGame")}</p>
+
+        <button
+          type="button"
+          className="rules-button"
+          onClick={() => setShowRules(true)}
+        >
+          {t(language, "rules")}
+        </button>
 
         <form onSubmit={handleStartGame}>
           <fieldset className="setup-choice-group">
@@ -131,6 +141,10 @@ export function GameSetup({ dispatch, language, onStart }) {
           </button>
         </form>
       </section>
+
+      {showRules && (
+        <RulesModal language={language} onClose={() => setShowRules(false)} />
+      )}
     </main>
   );
 }

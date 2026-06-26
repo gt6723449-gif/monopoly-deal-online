@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CardView } from "../../components/CardView/CardView";
-import { PROPERTY_SETS } from "../../game/data/propertySets";
+import { getPropertyColorName } from "../../game/data/propertyColorNames";
 import { calculateRentForGroup } from "../../game/engine/rentEngine";
 import { t } from "../../i18n/translations";
 import {
@@ -25,10 +25,6 @@ const PROPERTY_COLORS = {
     railroad: "#111827",
     utility: "#94a3b8",
 };
-
-function formatColorName(color) {
-    return PROPERTY_SETS[color]?.label || color;
-}
 
 function getPlayableRentColors(player, card) {
     return (card.meta.colors || []).filter(
@@ -154,64 +150,21 @@ export function PlayerHand({
             }
 
             if (choiceAction.type === "rent") {
-                if (choiceAction.playableRentColors.length === 1) {
-                    playRentCard(choiceAction.card, playerId, choiceAction.playableRentColors[0]);
-                    return;
-                }
-
                 handleTargetChange(choiceAction.card.instanceId, playerId);
                 return;
             }
 
             if (choiceAction.type === "slyDeal") {
-                const targetProperties = choiceAction.stealableProperties.filter(
-                    (item) => item.playerId === playerId
-                );
-
-                if (targetProperties.length === 1) {
-                    playSlyDeal(choiceAction.card, targetProperties[0].card.instanceId);
-                    return;
-                }
-
                 handleTargetChange(choiceAction.card.instanceId, playerId);
                 return;
             }
 
             if (choiceAction.type === "dealBreaker") {
-                const targetSets = choiceAction.stealableFullSets.filter(
-                    (item) => item.playerId === playerId
-                );
-
-                if (targetSets.length === 1) {
-                    playDealBreaker(choiceAction.card, targetSets[0]);
-                    return;
-                }
-
                 handleTargetChange(choiceAction.card.instanceId, playerId);
                 return;
             }
 
             if (choiceAction.type === "forcedDeal") {
-                const targetProperties = choiceAction.forcedDealTargets.filter(
-                    (item) => item.playerId === playerId
-                );
-                const offeredCardId =
-                    selectedTargets[`${choiceAction.card.instanceId}_modal_offered`] ||
-                    choiceAction.ownProperties[0]?.card.instanceId;
-
-                if (
-                    choiceAction.ownProperties.length === 1 &&
-                    targetProperties.length === 1 &&
-                    offeredCardId
-                ) {
-                    playForcedDeal(
-                        choiceAction.card,
-                        offeredCardId,
-                        targetProperties[0].card.instanceId
-                    );
-                    return;
-                }
-
                 handleTargetChange(choiceAction.card.instanceId, playerId);
             }
         }
@@ -487,6 +440,15 @@ export function PlayerHand({
             return true;
         }
 
+        if (action.type === "setModifier") {
+            const targetGroup = action.modifierTargets[0]?.group;
+
+            if (!targetGroup) return false;
+
+            handlePlaySetModifier(action.card, targetGroup);
+            return true;
+        }
+
         return false;
     }
 
@@ -507,9 +469,10 @@ export function PlayerHand({
         };
     }, [choiceAction, currentPlayer.id, selectedColors, selectedTargets]);
 
-    function handlePlaySetModifier(card) {
+    function handlePlaySetModifier(card, targetGroupOverride) {
         const targets = getModifierTargets(currentPlayer, card);
-        const selectedGroup = selectedTargets[card.instanceId] || targets[0]?.group;
+        const selectedGroup =
+            targetGroupOverride || selectedTargets[card.instanceId] || targets[0]?.group;
 
         if (!selectedGroup) return;
 
@@ -520,6 +483,19 @@ export function PlayerHand({
                 cardInstanceId: card.instanceId,
                 targetGroup: selectedGroup,
             },
+        });
+        setChoiceAction(null);
+    }
+
+    function openSetModifierChoice(card) {
+        const modifierTargets = getModifierTargets(currentPlayer, card);
+
+        if (modifierTargets.length === 0) return;
+
+        openChoiceAction({
+            type: "setModifier",
+            card,
+            modifierTargets,
         });
     }
 
@@ -567,7 +543,7 @@ export function PlayerHand({
                 card.type === "action" &&
                 (card.meta.actionType === "house" || card.meta.actionType === "hotel")
             ) {
-                handlePlaySetModifier(card);
+                openSetModifierChoice(card);
             }
 
             return;
@@ -595,6 +571,14 @@ export function PlayerHand({
         }
 
         if (card.type !== "action") return;
+
+        if (
+            card.meta.actionType === "house" ||
+            card.meta.actionType === "hotel"
+        ) {
+            openSetModifierChoice(card);
+            return;
+        }
 
         if (
             card.meta.actionType === "birthday" ||
@@ -881,7 +865,7 @@ export function PlayerHand({
                                                 handlePlayProperty(choiceAction.card, color)
                                             }
                                         >
-                                            <span>{formatColorName(color)}</span>
+                                            <span>{getPropertyColorName(color, language)}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -939,7 +923,7 @@ export function PlayerHand({
                                                     )
                                                 }
                                             >
-                                                <span>{formatColorName(color)}</span>
+                                                <span>{getPropertyColorName(color, language)}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -1035,7 +1019,8 @@ export function PlayerHand({
                                             }
                                         >
                                             <strong>
-                                                {t(language, "steal")} {formatColorName(item.group)}
+                                                {t(language, "steal")}{" "}
+                                                {getPropertyColorName(item.group, language)}
                                             </strong>
                                         </button>
                                     ))}
@@ -1127,6 +1112,33 @@ export function PlayerHand({
                                         </div>
                                     </>
                                 )}
+                            </div>
+                        )}
+
+                        {choiceAction.type === "setModifier" && (
+                            <div className="action-choice-list">
+                                {choiceAction.modifierTargets.map((item) => (
+                                    <button
+                                        type="button"
+                                        className="property-pick-card"
+                                        key={item.group}
+                                        style={{
+                                            "--property-choice-color":
+                                                PROPERTY_COLORS[item.group] || "#cbd5e1",
+                                        }}
+                                        onClick={() =>
+                                            handlePlaySetModifier(
+                                                choiceAction.card,
+                                                item.group
+                                            )
+                                        }
+                                    >
+                                        <strong>
+                                            {t(language, "addTo")}{" "}
+                                            {getPropertyColorName(item.group, language)}
+                                        </strong>
+                                    </button>
+                                ))}
                             </div>
                         )}
 

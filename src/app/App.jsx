@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PaymentPanel } from "../features/game-board/PaymentPanel";
 import { GameSetup } from "../features/game-board/GameSetup";
 import { ResponsePanel } from "../features/game-board/ResponsePanel";
@@ -11,9 +11,11 @@ import { LanguageSelectPage } from "../features/language/LanguageSelectPage";
 import { TurnTimer } from "../features/game-board/TurnTimer";
 import { getCompletedPropertySetCount } from "../game/engine/winEngine";
 import { t } from "../i18n/translations";
+import { SplashScreen } from "../features/loading/SplashScreen";
 
 export default function App() {
   const { game, dispatch } = useGame();
+  const [showSplash, setShowSplash] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   const [selectedColors, setSelectedColors] = useState({});
   const [selectedTargets, setSelectedTargets] = useState({});
@@ -23,6 +25,18 @@ export default function App() {
   const currentPlayer = game.players.find(
     (player) => player.id === game.currentPlayerId
   );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 1700);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen />;
+  }
 
   if (!language) {
     return (

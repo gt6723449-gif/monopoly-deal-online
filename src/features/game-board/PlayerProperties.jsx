@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CardView } from "../../components/CardView/CardView";
+import { getPropertyColorName } from "../../game/data/propertyColorNames";
 import { PROPERTY_SETS } from "../../game/data/propertySets";
 import { t } from "../../i18n/translations";
 
@@ -17,10 +18,6 @@ const PROPERTY_COLORS = {
   railroad: "#111827",
   utility: "#94a3b8",
 };
-
-function formatColorName(color) {
-  return PROPERTY_SETS[color]?.label || color;
-}
 
 function getPropertySlotBackground(card, group) {
   const activeColor = card.meta?.activeColor || group;
@@ -98,7 +95,7 @@ export function PlayerProperties({
             <div
               className={isComplete ? "property-group complete-set" : "property-group"}
               key={group}
-              title={`${formatColorName(group)} ${currentCount}/${setDefinition.requiredCount}`}
+              title={`${getPropertyColorName(group, language)} ${currentCount}/${setDefinition.requiredCount}`}
             >
               <div
                 className="property-card-slots"
@@ -200,7 +197,7 @@ export function PlayerProperties({
                   }}
                   onClick={() => changeWildColor(color)}
                 >
-                  <span>{formatColorName(color)}</span>
+                  <span>{getPropertyColorName(color, language)}</span>
                 </button>
               ))}
             </div>

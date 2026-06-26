@@ -1,9 +1,5 @@
-import { PROPERTY_SETS } from "../../../game/data/propertySets";
+import { getPropertyColorName } from "../../../game/data/propertyColorNames";
 import { t } from "../../../i18n/translations";
-
-function formatColorName(color) {
-  return PROPERTY_SETS[color]?.label || color;
-}
 
 export function PropertyCardActions({
   card,
@@ -28,7 +24,7 @@ export function PropertyCardActions({
         >
           {availableColors.map((color) => (
             <option value={color} key={color}>
-              {formatColorName(color)}
+              {getPropertyColorName(color, language)}
             </option>
           ))}
         </select>
